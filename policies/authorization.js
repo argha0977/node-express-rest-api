@@ -1,14 +1,47 @@
 /**
- * Authorization Key Generation & Verification
+ * ***************************************************
+ *            API Authorization Methods              *
+ *          Developed By Argha Deysarkar             *
+ * ***************************************************
  */
 
- 
+ const common = require('../config/common');
 
-//Check Authorization
+ /**
+  * Authorization keys
+  */
+ const keys = [
+     {authKey: 'QXBwQDo1NHUzMW1wdXp6', clientId: 'App@', secretKey: '54u31mpuzz'}
+ ];
+
+/**
+ * Check Authrization Key
+ * @param {string} authKey Base64 authorization key
+ */
 var isAuthorized = function (authKey) {
 
+    if(!authKey) return false;
+    else {
+        var splittedAuthKey = authKey.split(' ');
+        if(splittedAuthKey.length == 2) {
+            authKey = splittedAuthKey[1];
+            let index = common.findItem(keys, 'authKey', authKey);
+            if(index >= 0) {
+                var buflen = keys[index].clientId.length + keys[index].secretKey.length + 1;
+                var buf = Buffer.alloc(buflen, authKey, 'base64');
+                var plain_auth = buf.toString();
+                var creddentials = plain_auth.split(':');      // split on a ':'
+                var clientId = creddentials[0];
+                var secretKey = creddentials[1];
+                if(clientId == keys[index].clientId && secretKey == keys[index].secretKey) return true;
+                else return false;
+            }
+            else return false;
+        }
+        return false;
+    }
     // If they pass in a basic auth credential it'll be in a header called "Authorization" (note NodeJS lowercases the names of headers in its request object)
-    var auth = authKey;
+    /* var auth = authKey;
     var uname = 'App@';
     var pwd = '54u31mpuzz';
     //var auth = req.headers['authorization'];  // auth is in base64(username:password)  so we need to decode the base64
@@ -42,7 +75,7 @@ var isAuthorized = function (authKey) {
         else {
             return false;
         }
-    }
+    } */
 }
 
 module.exports.isAuthorized = isAuthorized;

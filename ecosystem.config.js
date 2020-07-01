@@ -1,6 +1,6 @@
 module.exports = {
   apps : [{
-    name: "NODE_EXPRESS_API",
+    name: "NODE_EXPRES_API",
     script: './bin/www',
     watch: true,
     ignore_watch:['node_modules', '*.log'],

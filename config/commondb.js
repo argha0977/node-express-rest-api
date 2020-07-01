@@ -1,6 +1,9 @@
-/******************************************
- *  Common Database Transaction  Methods  *
- ******************************************/
+/**
+ * ***************************************************
+ *             Common Database Methods               *
+ *          Developed By Argha Deysarkar             *
+ * ***************************************************
+ */
 
 var logger = require('./logger');
 var common = require('./common');

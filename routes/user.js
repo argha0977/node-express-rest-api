@@ -39,7 +39,7 @@ var regxattrs = ['firstname', 'lastname'];
 var requiredattrs = ['firstname', 'mobile'];
 
 /*Add */
-router.post('/create', function (req, res) {
+router.post('/create', async function (req, res) {
   if (auth.isAuthorized(req.headers['authorization'])) {
     var obj = req.body;
 
@@ -701,7 +701,7 @@ router.post('/resetPassword', async function (req, res) {
 });
 
 /*Upload*/
-router.post('/upload', multipartMiddleware, function (req, res) {
+router.post('/upload', multipartMiddleware, async function (req, res) {
   if (auth.isAuthorized(req.headers['authorization'])) {
     try {
       var tempPath = req.files.file.path;
@@ -710,13 +710,13 @@ router.post('/upload', multipartMiddleware, function (req, res) {
       var name = moment().unix();
       name += ext;
       var fileInfo = req.files.file;
-      commonspace.set(tempPath, IMAGE_FOLDER, name, function (err, data) {
+      commonspace.set(tempPath, IMAGE_FOLDER, name, async function (err, data) {
         if (err) res.status(err.status).json(err.message);
         else {
           var hex = /[0-9A-Fa-f]{24}/g;
           obj._id = (hex.test(obj._id)) ? new ObjectID.createFromHexString(obj._id) : -1;
           if (obj._id != -1) {
-            const db = await con.connect();
+
             var criteria = { _id: obj._id };
             var old = await commondb.findOne(db, model, criteria, {});
             var updateJson = { $set: { image: data.fileName } };
@@ -823,6 +823,7 @@ router.post('/signout', async function (req, res) {
     }
 
     try {
+      const db = con.connect();
       log = {};
       log.ocode = result.ocode;
       log.userid = obj.userid;

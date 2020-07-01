@@ -13,7 +13,7 @@
 ## Clone
 
 ```bash
-git clone git@github.com:argha0977/express-rest-api.git
+git clone git@github.com:argha0977/node-express-rest-api.git
 ```
 
 ## Dependencies

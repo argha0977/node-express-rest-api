@@ -437,7 +437,7 @@ router.post('/count', async function (req, res) {
 });
 
 /*Upload*/
-router.post('/upload', multipartMiddleware, function (req, res) {
+router.post('/upload', multipartMiddleware, async function (req, res) {
     if (auth.isAuthorized(req.headers['authorization'])) {
         try {
             var tempPath = req.files.file.path;
@@ -446,7 +446,7 @@ router.post('/upload', multipartMiddleware, function (req, res) {
             var name = moment().unix();
             name += ext;
             var fileInfo = req.files.file;
-            commonspace.set(tempPath, IMAGE_FOLDER, name, function(err, data){
+            commonspace.set(tempPath, IMAGE_FOLDER, name, async function(err, data){
                 if(err) res.status(err.status).json(err.message);
                 else {
                     var hex = /[0-9A-Fa-f]{24}/g;

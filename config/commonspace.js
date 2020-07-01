@@ -1,7 +1,10 @@
-/***************************************************
- * Common Space(Digital Ocean) Transaction  Methods
- * For File Upload/Download
- **************************************************/
+/**
+ * ***************************************************
+ *  Common Space(Digital Ocean) Transaction  Methods *
+ *            For File Upload/Download               *
+ *          Developed By Argha Deysarkar             *
+ * ***************************************************
+ */
 
 var common = require('./common');
 var logger = require('./logger');

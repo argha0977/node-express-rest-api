@@ -1,10 +1,18 @@
 /**
- * Winstone Log function
+ * ***************************************************
+ *                Winston Log Methods                *
+ *          Developed By Argha Deysarkar             *
+ * ***************************************************
  */
+
 
 const winston = require('winston');
 
 module.exports = {
+    /**
+     * Show information message in console
+     * @param {string} data Message to be printerd
+     */
     logInfo: function (data) {
         var level = 'debug';
         const logger = winston.createLogger({
@@ -24,6 +32,10 @@ module.exports = {
         logger.log({ level: level, message: data });
     },
 
+    /**
+     * Show error message to the console and store in error.log file
+     * @param {string} data Message to be printed
+     */
     logError: function (data) {
         var level = 'error';
         const logger = winston.createLogger({
