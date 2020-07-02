@@ -11,7 +11,7 @@
   * Authorization keys
   */
  const keys = [
-     {authKey: 'QXBwQDo1NHUzMW1wdXp6', clientId: 'App@', secretKey: '54u31mpuzz'}
+     {authKey: 'QXBwQDo1NHUzMW1wdXp6ghghj==', clientId: 'App@poib', secretKey: '521hnhA31mpuzz'}
  ];
 
 /**
