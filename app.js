@@ -9,6 +9,7 @@ var indexRouter = require('./routes/index');
 var userRouter = require('./routes/user');
 var organizationRouter = require('./routes/organization');
 var userlogRouter = require('./routes/userlog');
+var smslogRouter = require('./routes/smslog');
 
 var app = express();
 
@@ -29,6 +30,7 @@ app.use(prefix + '/', indexRouter);
 app.use(prefix + '/user', userRouter);
 app.use(prefix + '/organization', organizationRouter);
 app.use(prefix + '/userlog', userlogRouter);
+app.use(prefix + '/smslog', smslogRouter);
 
 
 // catch 404 and forward to error handler

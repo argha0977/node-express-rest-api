@@ -280,4 +280,19 @@ module.exports = {
             logger.logError(err);
         }
     },
+
+    /**
+     * Insert a row in SMS log
+     * @param {*} db Database
+     * @param {*} attrJson Attribute JSON
+     */
+    insertSMSLog: async function (db, attrJson) {
+        try {
+            const result = await db.collection(common.smsLogModel).insertOne(attrJson);
+            logger.logInfo(common.smsLogModel + ': Added to log');
+        } catch (err) {
+            logger.logError(common.smsLogModel + ': Error in insert to log:');
+            logger.logError(err);
+        }
+    },
 }

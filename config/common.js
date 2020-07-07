@@ -68,6 +68,11 @@ var AUTH_KEY_FILE_NAME = 'keys.json';
 var USER_LOG_MODEL = 'userlog';
 
 /**
+ * SMS log model name
+ */
+var SMS_LOG_MODEL = 'smslog';
+
+/**
  * BCC email ids
  */
 var BCC = ['email2argha@gmail.com'];

@@ -1,0 +1,26 @@
+{
+    "ios": {
+        "latest": "0.0.0",
+        "minimum": "0.0.0",
+        "url": "http://example.com/myAppUpdate",
+        "signout": true
+    },
+    "android": {
+        "latest": "0.0.43",
+        "minimum": "0.0.42",
+        "url": "https://play.google.com/store/apps/details?id=com.runyourschool.schoolapp",
+        "signout": false
+    },
+    "iosdwps": {
+        "latest": "0.0.0",
+        "minimum": "0.0.0",
+        "url": "http://example.com/myAppUpdate",
+        "signout": true
+    },
+    "androiddwps": {
+        "latest": "0.0.43",
+        "minimum": "0.0.42",
+        "url": "https://play.google.com/store/apps/details?id=com.runyourschool.dpwschoolapp",
+        "signout": false
+    }
+}

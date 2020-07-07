@@ -24,6 +24,7 @@ const commonspace = require('../config/commonspace');
 const common = require('../config/common');
 const logger = require('../config/logger');
 const pwd = require('../config/password');
+const commonsms = require('../config/commonsms');
 
 const IMAGE_PATH = __dirname + '/../public/images';
 const IMAGE_FOLDER = 'users';
@@ -975,29 +976,14 @@ function sendOtp(obj, status) {
   else {
     message += 'You have successfully reset your password in ' + common.apps[obj.otype].appname + '. Your OTP is ' + obj.plainPassword + '. Use this for next time sign in.'
   }
-  sendByMvayoo(message, obj.mobile, common.smsTempate.member);
+  let sms = {
+    ocode: obj.ocode,
+    sender: obj.userid,
+    type: (status == 'new') ? 'User' : 'Password',
+    timestamp: new Date(),
+    credit: 1,
+    message: message,
+    mobile: obj.mobile
+  }
+  commonsms.sendSMS(db, sms, common.smsTempate.member);
 };
-
-/**
- * Send SMS using Mvayoo gateway
- * @param {string} message Message to be sent
- * @param {*} mobile Mobile numbers
- * @param {string} templatePrefix Message template prefix
- */
-function sendByMvayoo(message, mobile, templatePrefix) {
-  message = templatePrefix + message;
-
-  var senderId = common.apps[obj.otype].senderid;//SENDERID;
-
-  request
-    .get('http://api.mVaayoo.com/mvaayooapi/MessageCompose?user=' + common.smsUser + ':' + common.smsPassword + '&senderID=' + senderId + '&receipientno=' + mobile + '&dcs=0&msgtxt=' + message + '&state=4 ')
-    .end(function (err, resp) {
-      if (err) {
-        logger.logError(err);
-        logger.logError('SMS sending failed');
-      }
-      else {
-        logger.logInfo('SMS sent');
-      }
-    });
-}

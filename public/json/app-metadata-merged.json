@@ -1,0 +1,48 @@
+{
+    "ios": {
+        "school": {
+            "latest": "0.0.0",
+            "minimum": "0.0.0",
+            "url": "http://example.com/myAppUpdate",
+            "signout": true
+        },
+        "schooldpwsk": {
+            "latest": "0.0.0",
+            "minimum": "0.0.0",
+            "url": "http://example.com/myAppUpdate",
+            "signout": true
+        },
+        "college": {
+            "latest": "0.0.0",
+            "minimum": "0.0.0",
+            "url": "http://example.com/myAppUpdate",
+            "signout": true
+        }
+    },
+    "android": {
+        "school": {
+            "latest": "0.2.5",
+            "minimum": "0.2.5",
+            "url": "https://play.google.com/store/apps/details?id=com.runyourschool.schoolapp",
+            "signout": false
+        },
+        "schooldpwsk": {
+            "latest": "0.2.5",
+            "minimum": "0.2.5",
+            "url": "https://play.google.com/store/apps/details?id=com.runyourschool.dpwschoolapp",
+            "signout": false
+        },
+        "college": {
+            "latest": "0.3.5",
+            "minimum": "0.3.5",
+            "url": "https://play.google.com/store/apps/details?id=com.educampuz.collegemanageapp",
+            "signout": false
+        },
+        "companymymembers": {
+            "latest": "0.1.0",
+            "minimum": "0.1.0",
+            "url": "https://play.google.com/store/apps/details?id=com.softmeets.mymembersapp",
+            "signout": false
+        }
+    }
+}
