@@ -274,7 +274,7 @@ module.exports = {
     insertLog: async function (db, attrJson) {
         try {
             const result = await db.collection(common.userLogModel).insertOne(attrJson);
-            logger.logInfo(common.userLogModel + ': Added to log');
+            //logger.logInfo(common.userLogModel + ': Added to log');
         } catch (err) {
             logger.logError(common.userLogModel + ': Error in insert to log:');
             logger.logError(err);
@@ -289,7 +289,7 @@ module.exports = {
     insertSMSLog: async function (db, attrJson) {
         try {
             const result = await db.collection(common.smsLogModel).insertOne(attrJson);
-            logger.logInfo(common.smsLogModel + ': Added to log');
+            //logger.logInfo(common.smsLogModel + ': Added to log');
         } catch (err) {
             logger.logError(common.smsLogModel + ': Error in insert to log:');
             logger.logError(err);

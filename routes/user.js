@@ -129,7 +129,7 @@ router.post('/create', async function (req, res) {
         }
         var user = await commondb.find(db, model, criteria, { ocode: 1, mobile: 1, _id: 0 });
         if (user.length > 0) {//Duplicate present
-          res.status(400).json({ error: 'Another user has already been registered with this mobile no.' });
+          res.status(400).json({ error: 'Insert Error! Another user has already been registered with this mobile no.' });
         }
         else {//No duplicate
           var uid = '';
@@ -252,7 +252,7 @@ router.post('/update', async function (req, res) {
         var criteria = { mobile: obj.mobile, _id: { $ne: obj._id } };
         var user = await commondb.find(db, model, criteria, { ocode: 1, mobile: 1, _id: 0 });
         if (user.length > 0) {//duplicate present
-          res.status(400).json({ error: 'Another user has already been registered with this mobile no.' });
+          res.status(400).json({ error: 'Update Error! Another user has already been registered with this mobile no.' });
         }
         else {//No duplicate
           if (obj.ocode) {
@@ -434,6 +434,9 @@ router.get('/showUser/:ocode/:userid', async function (req, res) {
 router.post('/search', async function (req, res) {
   if (auth.isAuthorized(req.headers['authorization'])) {
     var obj = req.body;
+    for (var key in obj) {
+      if (obj[key] == '') delete obj[key];
+    }
     try {
       const db = await con.connect();
       regxattrs.forEach(element => {
@@ -482,6 +485,9 @@ router.post('/search', async function (req, res) {
 router.post('/count', async function (req, res) {
   if (auth.isAuthorized(req.headers['authorization'])) {
     var obj = req.body;
+    for (var key in obj) {
+      if (obj[key] == '') delete obj[key];
+    }
     try {
       const db = await con.connect();
       regxattrs.forEach(element => {
@@ -717,7 +723,7 @@ router.post('/upload', multipartMiddleware, async function (req, res) {
           var hex = /[0-9A-Fa-f]{24}/g;
           obj._id = (hex.test(obj._id)) ? new ObjectID.createFromHexString(obj._id) : -1;
           if (obj._id != -1) {
-
+            const db = await con.connect();
             var criteria = { _id: obj._id };
             var old = await commondb.findOne(db, model, criteria, {});
             var updateJson = { $set: { image: data.fileName } };

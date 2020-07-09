@@ -285,6 +285,7 @@ module.exports.spacePath = SPACE_PATH;
 module.exports.authKeyFileName = AUTH_KEY_FILE_NAME;
 
 module.exports.userLogModel = USER_LOG_MODEL;
+module.exports.smsLogModel = SMS_LOG_MODEL;
 
 module.exports.bcc = BCC;
 module.exports.appType = APP_TYPE;

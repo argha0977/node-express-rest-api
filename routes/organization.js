@@ -344,6 +344,9 @@ router.get('/showByCode/:ocode', async function (req, res) {
 router.post('/search', async function (req, res) {
     if (auth.isAuthorized(req.headers['authorization'])) {
         var obj = req.body;
+        for (var key in obj) {
+            if (obj[key] == '') delete obj[key];
+        }
         try {
             const db = await con.connect();
             regxattrs.forEach(element => {
@@ -392,6 +395,9 @@ router.post('/search', async function (req, res) {
 router.post('/count', async function (req, res) {
     if (auth.isAuthorized(req.headers['authorization'])) {
         var obj = req.body;
+        for (var key in obj) {
+            if (obj[key] == '') delete obj[key];
+        }
         try {
             const db = await con.connect();
             regxattrs.forEach(element => {
