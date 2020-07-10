@@ -237,7 +237,15 @@ module.exports = {
      */
     groupOnly: async function (db, model, criteria, groupJson) {
         try {
-            var result = await db.collection(model).aggregate([{ $match: criteria }, { $group: groupJson }]).toArray();
+            var aggregateArray = [];
+            if (criteria.sort) {
+                var sort = criteria.sort;
+                delete criteria.sort;
+                aggregateArray = [{ $match: criteria }, { $sort: sort }];
+            }
+            else aggregateArray = [{ $match: criteria }];
+            aggregateArray.push({ $group: groupJson });
+            var result = await db.collection(model).aggregate(aggregateArray).toArray();
             return result;
         } catch (err) {
             logger.logError(model + ': Error in group only:');
@@ -273,6 +281,7 @@ module.exports = {
      */
     insertLog: async function (db, attrJson) {
         try {
+            attrJson.timestamp = new Date();
             const result = await db.collection(common.userLogModel).insertOne(attrJson);
             //logger.logInfo(common.userLogModel + ': Added to log');
         } catch (err) {
@@ -288,6 +297,7 @@ module.exports = {
      */
     insertSMSLog: async function (db, attrJson) {
         try {
+            attrJson.timestamp = new Date();
             const result = await db.collection(common.smsLogModel).insertOne(attrJson);
             //logger.logInfo(common.smsLogModel + ': Added to log');
         } catch (err) {
