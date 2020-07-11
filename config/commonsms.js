@@ -15,7 +15,7 @@ var commondb = require('./commondb');
  */
 var mvayoo = {
     userid: 'hchakraborty@asthaitsolutions.com',
-    password: 'Asth@prs',
+    password: 'Asth5qwertyuiop@prs',
     senderid: 'AASTHA',
 } 
 
@@ -24,7 +24,7 @@ var mvayoo = {
  */
 var bizztel = {
     userid: 'hchakraborty',
-    password: 'itsolutions123',
+    password: 'itsolutionslkjhgfdsa0123',
     senderid: 'LMDEMO'
 } 
 
