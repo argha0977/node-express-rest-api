@@ -130,7 +130,6 @@ module.exports = router;
  * @param {*} criteria Update criteria
  * @param {*} updateJson Update JSON
  * @param {string} umodel Model name
- * @param {*} db Database
  */
 async function updateOther(criteria, updateJson, umodel) {
     try {
@@ -145,7 +144,6 @@ async function updateOther(criteria, updateJson, umodel) {
  * Delete rows matching criteria from dependent collections
  * @param {*} criteria Delete criteria
  * @param {string} umodel Model name
- * @param {*} db Database
  */
 async function deleteOther(criteria, umodel) {
     try {
