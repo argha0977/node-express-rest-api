@@ -9,7 +9,6 @@ var express = require('express');
 var router = express.Router();
 
 const auth = require('../policies/authorization');
-const con = require('../config/connection');
 const commondb = require('../config/commondb');
 const common = require('../config/common');
 const logger = require('../config/logger');
@@ -31,7 +30,6 @@ router.post('/search', async function (req, res) {
             if (obj[key] == '') delete obj[key];
         }
         try {
-            const db = await con.connect();
             regxattrs.forEach(element => {
                 if (obj[element]) {
                     try {
@@ -46,7 +44,7 @@ router.post('/search', async function (req, res) {
                 delete obj.start;
                 delete obj.end;
             }
-            var result = await commondb.find(db, model, obj, {});
+            var result = await commondb.find(model, obj, {});
             for (var index = 0; index < result.length; index++) {
                 if (result[index.type] == 'Delete') {
                     result[index].message += ' from';
@@ -77,7 +75,6 @@ router.post('/count', async function (req, res) {
             if (obj[key] == '') delete obj[key];
         }
         try {
-            const db = await con.connect();
             regxattrs.forEach(element => {
                 if (obj[element]) {
                     try {
@@ -92,7 +89,7 @@ router.post('/count', async function (req, res) {
                 delete obj.start;
                 delete obj.end;
             }
-            var result = await commondb.count(db, model, obj, {});
+            var result = await commondb.count(model, obj, {});
             res.status(200).json(result);
         } catch (err) {
             res.status(err.status).json(err.message);
@@ -114,11 +111,10 @@ module.exports = router;
  * @param {*} criteria Update criteria
  * @param {*} updateJson Update JSON
  * @param {string} umodel Model name
- * @param {*} db Database
  */
-async function updateOther(criteria, updateJson, umodel, db) {
+async function updateOther(criteria, updateJson, umodel) {
     try {
-        var result = await commondb.updateMany(db, umodel, criteria, updateJson);
+        var result = await commondb.updateMany(umodel, criteria, updateJson);
         logger.logInfo(umodel + ' updated');
     } catch (err) {
         logger.logError(err.message);
@@ -129,11 +125,10 @@ async function updateOther(criteria, updateJson, umodel, db) {
  * Delete rows matching criteria from dependent collections
  * @param {*} criteria Delete criteria
  * @param {string} umodel Model name
- * @param {*} db Database
  */
-async function deleteOther(criteria, umodel, db) {
+async function deleteOther(criteria, umodel) {
     try {
-        var result = await commondb.deleteMany(db, umodel, criteria);
+        var result = await commondb.deleteMany(umodel, criteria);
         logger.logInfo(umodel + ' deleted');
     } catch (err) {
         logger.logError(err.message);

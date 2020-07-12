@@ -9,7 +9,6 @@ var express = require('express');
 var router = express.Router();
 
 const auth = require('../policies/authorization');
-const con = require('../config/connection');
 const commondb = require('../config/commondb');
 const common = require('../config/common');
 const logger = require('../config/logger');
@@ -31,7 +30,6 @@ router.post('/search', async function (req, res) {
             if (obj[key] == '') delete obj[key];
         }
         try {
-            const db = await con.connect();
             regxattrs.forEach(element => {
                 if (obj[element]) {
                     try {
@@ -46,7 +44,7 @@ router.post('/search', async function (req, res) {
                 delete obj.start;
                 delete obj.end;
             }
-            var result = await commondb.find(db, model, obj, {});
+            var result = await commondb.find( model, obj, {});
             res.status(200).json(result);
         } catch (err) {
             res.status(err.status).json(err.message);
@@ -65,7 +63,6 @@ router.post('/count', async function (req, res) {
             if (obj[key] == '') delete obj[key];
         }
         try {
-            const db = await con.connect();
             regxattrs.forEach(element => {
                 if (obj[element]) {
                     try {
@@ -80,7 +77,7 @@ router.post('/count', async function (req, res) {
                 delete obj.start;
                 delete obj.end;
             }
-            var result = await commondb.count(db, model, obj, {});
+            var result = await commondb.count( model, obj, {});
             res.status(200).json(result);
         } catch (err) {
             res.status(err.status).json(err.message);
@@ -96,7 +93,6 @@ router.post('/totalUsage', async function (req, res) {
     if (auth.isAuthorized(req.headers['authorization'])) {
         var obj = req.body;
         try {
-            const db = await con.connect();
             regxattrs.forEach(element => {
                 if (obj[element]) {
                     try {
@@ -112,7 +108,7 @@ router.post('/totalUsage', async function (req, res) {
                 delete obj.end;
             }
             var groupJson = { _id: '$ocode', total: { $sum: '$credit' } };
-            var result = await commondb.groupOnly(db, model, obj, groupJson);
+            var result = await commondb.groupOnly( model, obj, groupJson);
             res.status(200).json(result);
         } catch (err) {
             res.status(err.status).json(err.message);
@@ -136,9 +132,9 @@ module.exports = router;
  * @param {string} umodel Model name
  * @param {*} db Database
  */
-async function updateOther(criteria, updateJson, umodel, db) {
+async function updateOther(criteria, updateJson, umodel) {
     try {
-        var result = await commondb.updateMany(db, umodel, criteria, updateJson);
+        var result = await commondb.updateMany( umodel, criteria, updateJson);
         logger.logInfo(umodel + ' updated');
     } catch (err) {
         logger.logError(err.message);
@@ -151,9 +147,9 @@ async function updateOther(criteria, updateJson, umodel, db) {
  * @param {string} umodel Model name
  * @param {*} db Database
  */
-async function deleteOther(criteria, umodel, db) {
+async function deleteOther(criteria, umodel) {
     try {
-        var result = await commondb.deleteMany(db, umodel, criteria);
+        var result = await commondb.deleteMany( umodel, criteria);
         logger.logInfo(umodel + ' deleted');
     } catch (err) {
         logger.logError(err.message);

@@ -18,7 +18,6 @@ var nodemailer = require('nodemailer');
 var request = require('superagent');
 
 const auth = require('../policies/authorization');
-const con = require('../config/connection');
 const commondb = require('../config/commondb');
 const commonspace = require('../config/commonspace');
 const common = require('../config/common');
@@ -118,7 +117,6 @@ router.post('/create', async function (req, res) {
     }
     if (isValid) {
       try {
-        const db = await con.connect();
         //Check duplicate
         var criteria = { mobile: obj.mobile };
         if (obj.ocode) {
@@ -127,7 +125,7 @@ router.post('/create', async function (req, res) {
         else {
           criteria.ocode = { $exists: false };
         }
-        var user = await commondb.find(db, model, criteria, { ocode: 1, mobile: 1, _id: 0 });
+        var user = await commondb.find(model, criteria, { ocode: 1, mobile: 1, _id: 0 });
         if (user.length > 0) {//Duplicate present
           res.status(400).json({ error: 'Insert Error! Another user has already been registered with this mobile no.' });
         }
@@ -151,7 +149,7 @@ router.post('/create', async function (req, res) {
           criteria = { userid: new RegExp('^' + uid) };
           criteria.sort = { userid: 1 };
           var attrJson = { userid: 1, _id: 0 };
-          var last = await commondb.find(db, model, criteria, attrJson);
+          var last = await commondb.find(model, criteria, attrJson);
           if (last.length > 0) {
             var max = 0;
             for (var i = 0; i < last.length; i++) {
@@ -172,7 +170,7 @@ router.post('/create', async function (req, res) {
           obj.onetime = true;
           obj.password = hashPassword;
           //Insert
-          var result = await commondb.insertOne(db, model, obj);
+          var result = await commondb.insertOne(model, obj);
           res.status(200).json(result);
           result.plainPassword = password;
           result.otype = otype;
@@ -189,7 +187,7 @@ router.post('/create', async function (req, res) {
             req.connection.remoteAddress ||
             req.socket.remoteAddress ||
             req.connection.socket.remoteAddress;
-          commondb.insertLog(db, log);
+          commondb.insertLog(log);
         }
       } catch (err) {
         res.status(err.status).json(err.message);
@@ -244,13 +242,12 @@ router.post('/update', async function (req, res) {
     else obj.lastupdatedby = userid;
 
     try {
-      const db = await con.connect();
       var hex = /[0-9A-Fa-f]{24}/g;
       obj._id = (hex.test(obj._id)) ? new ObjectID.createFromHexString(obj._id) : -1;
       if (obj._id != -1) {
         //Check duplicate
         var criteria = { mobile: obj.mobile, _id: { $ne: obj._id } };
-        var user = await commondb.find(db, model, criteria, { ocode: 1, mobile: 1, _id: 0 });
+        var user = await commondb.find(model, criteria, { ocode: 1, mobile: 1, _id: 0 });
         if (user.length > 0) {//duplicate present
           res.status(400).json({ error: 'Update Error! Another user has already been registered with this mobile no.' });
         }
@@ -262,7 +259,7 @@ router.post('/update', async function (req, res) {
             criteria.ocode = { $exists: false };
           }
           criteria = { _id: obj._id };
-          var old = await commondb.findOne(db, model, criteria);
+          var old = await commondb.findOne(model, criteria);
           var unset = {};
           var unsetCount = 0;
           var logmessage = '';
@@ -279,7 +276,7 @@ router.post('/update', async function (req, res) {
           }
           var updateAttr = obj;
           if (unsetCount > 0) updateAttr = { $set: obj, $unset: unset };
-          var result = await commondb.updateOne(db, model, criteria, updateAttr);
+          var result = await commondb.updateOne(model, criteria, updateAttr);
           res.status(200).json(result);
           log = {};
           log.ocode = obj.ocode;
@@ -294,7 +291,7 @@ router.post('/update', async function (req, res) {
             req.connection.remoteAddress ||
             req.socket.remoteAddress ||
             req.connection.socket.remoteAddress;
-          commondb.insertLog(db, log);
+          commondb.insertLog(log);
         }
       }
       else res.status(500).json({ error: 'ID is not a valid string' });
@@ -336,13 +333,12 @@ router.post('/delete', async function (req, res) {
     }
 
     try {
-      const db = await con.connect();
       var hex = /[0-9A-Fa-f]{24}/g;
       obj._id = (hex.test(obj._id)) ? new ObjectID.createFromHexString(obj._id) : -1;
       if (obj._id != -1) {
         var criteria = { _id: obj._id };
-        var old = await commondb.findOne(db, model, criteria, {});
-        var result = await commondb.deleteOne(db, model, criteria);
+        var old = await commondb.findOne(model, criteria, {});
+        var result = await commondb.deleteOne(model, criteria);
         res.status(200).json(result);
         var log = {};
         log.ocode = obj.ocode;
@@ -355,7 +351,7 @@ router.post('/delete', async function (req, res) {
           req.connection.remoteAddress ||
           req.socket.remoteAddress ||
           req.connection.socket.remoteAddress;
-        commondb.insertLog(db, log);
+        commondb.insertLog(log);
         if (old.image) {
           var oldName = old.image;
           commonspace.remove(IMAGE_FOLDER, oldName, function (err, success) {
@@ -378,12 +374,11 @@ router.post('/delete', async function (req, res) {
 router.get('/show/:id', async function (req, res) {
   if (auth.isAuthorized(req.headers['authorization'])) {
     try {
-      const db = await con.connect();
       var hex = /[0-9A-Fa-f]{24}/g;
       var id = (hex.test(req.params.id)) ? new ObjectID.createFromHexString(req.params.id) : -1;
       if (id != -1) {
         var criteria = { _id: id };
-        var result = await commondb.findOne(db, model, criteria, {});
+        var result = await commondb.findOne(model, criteria, {});
         res.status(200).json(result);
       }
       else res.status(500).json({ error: 'ID is not a valid string' });
@@ -400,9 +395,8 @@ router.get('/show/:id', async function (req, res) {
 router.get('/showUser/:userid', async function (req, res) {
   if (auth.isAuthorized(req.headers['authorization'])) {
     try {
-      const db = await con.connect();
       var criteria = { $or: [{ email: req.params.userid }, { mobile: req.params.userid }, { userid: req.params.userid }] };
-      var result = await commondb.findOne(db, model, criteria, {});
+      var result = await commondb.findOne(model, criteria, {});
       res.status(200).json(result);
     } catch (err) {
       res.status(err.status).json(err.message);
@@ -417,9 +411,8 @@ router.get('/showUser/:userid', async function (req, res) {
 router.get('/showUser/:ocode/:userid', async function (req, res) {
   if (auth.isAuthorized(req.headers['authorization'])) {
     try {
-      const db = await con.connect();
       var criteria = { ocode: req.params.ocode, $or: [{ email: req.params.userid }, { mobile: req.params.userid }, { userid: req.params.userid }] };
-      var result = await commondb.findOne(db, model, criteria, {});
+      var result = await commondb.findOne(model, criteria, {});
       res.status(200).json(result);
     } catch (err) {
       res.status(err.status).json(err.message);
@@ -438,7 +431,6 @@ router.post('/search', async function (req, res) {
       if (obj[key] == '') delete obj[key];
     }
     try {
-      const db = await con.connect();
       regxattrs.forEach(element => {
         if (obj[element]) {
           try {
@@ -470,7 +462,7 @@ router.post('/search', async function (req, res) {
         }
         delete obj.date;
       }
-      var result = await commondb.find(db, model, obj, {});
+      var result = await commondb.find(model, obj, {});
       res.status(200).json(result);
     } catch (err) {
       res.status(err.status).json(err.message);
@@ -489,7 +481,6 @@ router.post('/count', async function (req, res) {
       if (obj[key] == '') delete obj[key];
     }
     try {
-      const db = await con.connect();
       regxattrs.forEach(element => {
         if (obj[element]) {
           try {
@@ -521,7 +512,7 @@ router.post('/count', async function (req, res) {
         }
         delete obj.date;
       }
-      var result = await commondb.count(db, model, obj, {});
+      var result = await commondb.count(model, obj, {});
       res.status(200).json(result);
     } catch (err) {
       res.status(err.status).json(err.message);
@@ -581,15 +572,14 @@ router.post('/updatePassword', async function (req, res) {
     else obj.lastupdatedby = userid;
 
     try {
-      const db = await con.connect();
       var hex = /[0-9A-Fa-f]{24}/g;
       obj._id = (hex.test(obj._id)) ? new ObjectID.createFromHexString(obj._id) : -1;
       if (obj._id != -1) {
         var criteria = { _id: obj._id };
-        var old = await commondb.findOne(db, model, criteria);
+        var old = await commondb.findOne(model, criteria);
         var hashPassword = await pwd.passwordHash(obj.password);
         var updateAttr = { onetime: false, password: hashPassword}
-        var result = await commondb.updateOne(db, model, criteria, updateAttr);
+        var result = await commondb.updateOne(model, criteria, updateAttr);
         res.status(200).json(result);
         result.plainPassword = obj.password;
         result.otype = otype;
@@ -606,7 +596,7 @@ router.post('/updatePassword', async function (req, res) {
           req.connection.remoteAddress ||
           req.socket.remoteAddress ||
           req.connection.socket.remoteAddress;
-        commondb.insertLog(db, log);
+        commondb.insertLog(log);
       }
       else res.status(500).json({ error: 'ID is not a valid string' });
 
@@ -668,16 +658,15 @@ router.post('/resetPassword', async function (req, res) {
     else obj.lastupdatedby = userid;
 
     try {
-      const db = await con.connect();
       var hex = /[0-9A-Fa-f]{24}/g;
       obj._id = (hex.test(obj._id)) ? new ObjectID.createFromHexString(obj._id) : -1;
       if (obj._id != -1) {
         var criteria = { _id: obj._id };
-        var old = await commondb.findOne(db, model, criteria);
+        var old = await commondb.findOne(model, criteria);
         var password = pwd.generateOTP();
         var hashPassword = await pwd.passwordHash(password);
         var updateAttr = { onetime: true, password: hashPassword }
-        var result = await commondb.updateOne(db, model, criteria, updateAttr);
+        var result = await commondb.updateOne(model, criteria, updateAttr);
         res.status(200).json(result);
         result.plainPassword = password;
         result.otype = otype;
@@ -694,7 +683,7 @@ router.post('/resetPassword', async function (req, res) {
           req.connection.remoteAddress ||
           req.socket.remoteAddress ||
           req.connection.socket.remoteAddress;
-        commondb.insertLog(db, log);
+        commondb.insertLog(log);
       }
       else res.status(500).json({ error: 'ID is not a valid string' });
 
@@ -723,11 +712,10 @@ router.post('/upload', multipartMiddleware, async function (req, res) {
           var hex = /[0-9A-Fa-f]{24}/g;
           obj._id = (hex.test(obj._id)) ? new ObjectID.createFromHexString(obj._id) : -1;
           if (obj._id != -1) {
-            const db = await con.connect();
             var criteria = { _id: obj._id };
-            var old = await commondb.findOne(db, model, criteria, {});
+            var old = await commondb.findOne(model, criteria, {});
             var updateJson = { $set: { image: data.fileName } };
-            var result = await commondb.updateOne(db, model, criteria, updateJson);
+            var result = await commondb.updateOne(model, criteria, updateJson);
             result.value = data.fileName;
             res.status(200).json(result);
             if (old.image) {
@@ -782,7 +770,6 @@ router.post('/signin', async function (req, res) {
     }
 
     try {
-      const db = await con.connect();
       var criteria = { $or: [{ email: obj.userid }, { mobile: obj.userid }, { userid: obj.userid }] };
       if (obj.ocode) {
         criteria.ocode = obj.ocode;
@@ -790,7 +777,7 @@ router.post('/signin', async function (req, res) {
       else {
         criteria.ocode = { $exists: false };
       }
-      var result = await commondb.findOne(db, model, criteria, {});
+      var result = await commondb.findOne(model, criteria, {});
       var match = await pwd.comparePassword(obj.password, result.password);
       if (match) {
         log = {};
@@ -806,7 +793,7 @@ router.post('/signin', async function (req, res) {
           req.connection.socket.remoteAddress;
         delete result.password;
         res.status(200).json(result);
-        commondb.insertLog(db, log);
+        commondb.insertLog(log);
       }
       else res.status(404).json({ error: 'The userid or password you entered is incorrect' });
     } catch (err) {
@@ -830,7 +817,6 @@ router.post('/signout', async function (req, res) {
     }
 
     try {
-      const db = con.connect();
       log = {};
       log.ocode = result.ocode;
       log.userid = obj.userid;
@@ -843,7 +829,7 @@ router.post('/signout', async function (req, res) {
         req.socket.remoteAddress ||
         req.connection.socket.remoteAddress;
       res.status(200).json({ data: 'Signed out' });
-      commondb.insertLog(db, log);
+      commondb.insertLog(log);
     } catch (err) {
       res.status(err.status).json(err.message);
     }
@@ -866,11 +852,10 @@ module.exports = router;
  * @param {*} criteria Update criteria
  * @param {*} updateJson Update JSON
  * @param {string} umodel Model name
- * @param {*} db Database
  */
-async function updateOther(criteria, updateJson, umodel, db) {
+async function updateOther(criteria, updateJson, umodel) {
   try {
-    var result = await commondb.updateMany(db, umodel, criteria, updateJson);
+    var result = await commondb.updateMany(umodel, criteria, updateJson);
     logger.logInfo(umodel + ' updated');
   } catch (err) {
     logger.logError(err.message);
@@ -881,11 +866,10 @@ async function updateOther(criteria, updateJson, umodel, db) {
  * Delete rows matching criteria from dependent collections
  * @param {*} criteria Delete criteria
  * @param {string} umodel Model name
- * @param {*} db Database
  */
-async function deleteOther(criteria, umodel, db) {
+async function deleteOther(criteria, umodel) {
   try {
-    var result = await commondb.deleteMany(db, umodel, criteria);
+    var result = await commondb.deleteMany(umodel, criteria);
     logger.logInfo(umodel + ' deleted');
   } catch (err) {
     logger.logError(err.message);
@@ -991,5 +975,5 @@ function sendOtp(obj, status) {
     message: message,
     mobile: obj.mobile
   }
-  commonsms.sendSMS(db, sms, common.smsTempate.member);
+  commonsms.sendSMS(sms, common.smsTempate.member);
 };

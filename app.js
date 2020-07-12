@@ -2,8 +2,11 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+var mlogger = require('morgan');
 var cors = require('cors');
+
+var logger = require('./config/logger');
+var con = require('./config/connection').connection;
 
 var indexRouter = require('./routes/index');
 var userRouter = require('./routes/user');
@@ -17,7 +20,7 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(logger('dev'));
+app.use(mlogger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -32,6 +35,25 @@ app.use(prefix + '/organization', organizationRouter);
 app.use(prefix + '/userlog', userlogRouter);
 app.use(prefix + '/smslog', smslogRouter);
 
+
+/**
+ * ***********************************
+ * Database Connection
+ * ***********************************
+ */
+  //Close the existing collection
+  con.close();
+
+  //New Connection
+  con.connect().then(function () {
+    logger.logInfo('DB Connection successful!!');
+  })
+  .catch(function (err) {
+    logger.logError(err.message);
+  })
+  /**
+   * **********************************
+   */
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

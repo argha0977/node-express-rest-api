@@ -7,16 +7,17 @@
 
 var logger = require('./logger');
 var common = require('./common');
+var con = require('./connection').connection;
 
 module.exports = {
     /**
      * Insert One row
-     * @param {*} db Database
      * @param {string} model Model Name
      * @param {*} attrJson Attribute JSON 
      */
-    insertOne: async function (db, model, attrJson) {
+    insertOne: async function (model, attrJson) {
         try {
+            const db = con.db;
             const result = await db.collection(model).insertOne(attrJson);
             attrJson._id = result.insertedId;
             return attrJson;
@@ -30,12 +31,12 @@ module.exports = {
 
     /**
      * Insert many rows
-     * @param {*} db Database
      * @param {string} model Model Name
      * @param {*} array JSON Array 
      */
-    insertMany: async function (db, model, array) {
+    insertMany: async function (model, array) {
         try {
+            const db = con.db;
             const result = await db.collection(model).insertMany(array);
             return { count: array.length };
         } catch (err) {
@@ -48,12 +49,11 @@ module.exports = {
 
     /**
      * Update One row
-     * @param {*} db Database
      * @param {string} model Model Name
      * @param {*} criteria Criteria JSON
      * @param {*} attrJson Attribute JSON 
      */
-    updateOne: async function (db, model, criteria, attrJson) {
+    updateOne: async function (model, criteria, attrJson) {
         var update = {};
         if (attrJson['$push'] || attrJson['$pop'] || attrJson['$unset'] ||  attrJson['$set']) {
             update = attrJson;
@@ -64,6 +64,7 @@ module.exports = {
             update = { $set: attrJson };
         }
         try {
+            const db = con.db;
             const result = await db.collection(model).updateOne(criteria, update);
             return attrJson;
         } catch (err) {
@@ -76,12 +77,11 @@ module.exports = {
 
     /**
      * Update many rows
-     * @param {*} db Database
      * @param {string} model Model Name
      * @param {*} criteria Criteria JSON
      * @param {*} attrJson Attribute JSON 
      */
-    updateMany: async function (db, model, criteria, attrJson) {
+    updateMany: async function (model, criteria, attrJson) {
         var update = {};
         if (attrJson['$push'] || attrJson['$pop'] || attrJson['$unset'] || attrJson['$set']) {
             update = attrJson;
@@ -92,6 +92,7 @@ module.exports = {
             update = { $set: attrJson };
         }
         try {
+            const db = con.db;
             const result = await db.collection(model).updateMany(criteria, update);
             return attrJson;
         } catch (err) {
@@ -104,12 +105,12 @@ module.exports = {
 
     /**
      * Delete One row
-     * @param {*} db Database
      * @param {string} model Model Name
      * @param {*} criteria Criteria JSON
      */
-    deleteOne: async function (db, model, criteria) {
+    deleteOne: async function (model, criteria) {
         try {
+            const db = con.db;
             const result = await db.collection(model).deleteOne(criteria);
             return { message: 'Removed one from ' + model };
         } catch (err) {
@@ -122,12 +123,12 @@ module.exports = {
 
     /**
      * Delete many rows
-     * @param {*} db Database
      * @param {string} model Model Name
      * @param {*} criteria Criteria JSON
      */
-    deleteMany: async function (db, model, criteria) {
+    deleteMany: async function (model, criteria) {
         try {
+            const db = con.db;
             const result = await db.collection(model).deleteMany(criteria);
             return { message: 'Removed many from ' + model };
         } catch (err) {
@@ -140,13 +141,13 @@ module.exports = {
 
     /**
      * Find one row
-     * @param {*} db Database
      * @param {string} model Model Name
      * @param {*} criteria Criteria JSON
      * @param {*} attrJson Attribute JSON 
      */
-    findOne: async function (db, model, criteria, attrJson) {
+    findOne: async function (model, criteria, attrJson) {
         try {
+            const db = con.db;
             var result = await db.collection(model).findOne(criteria, attrJson);
             if(result) return result;
             else {
@@ -167,12 +168,12 @@ module.exports = {
 
     /**
      * Count rows
-     * @param {*} db Database
      * @param {string} model Model Name
      * @param {*} criteria Criteria JSON
      */
-    count: async function (db, model, criteria) {
+    count: async function (model, criteria) {
         try {
+            const db = con.db;
             var result = await db.collection(model).countDocuments(criteria);
             return result;
         } catch (err) {
@@ -185,13 +186,13 @@ module.exports = {
 
     /**
      * Find many rows
-     * @param {*} db Database
      * @param {string} model Model Name
      * @param {*} criteria Criteria JSON
      * @param {*} attrJson Attribute JSON 
      */
-    find: async function (db, model, criteria, attrJson) {
+    find: async function (model, criteria, attrJson) {
         try {
+            const db = con.db;
             var skip = 0;
             if (criteria.skip || criteria.skip == 0) {
                 skip = parseInt(criteria.skip);
@@ -230,13 +231,13 @@ module.exports = {
 
     /**
      * Group rows
-     * @param {*} db Database
      * @param {string} model Model Name
      * @param {*} criteria Criteria JSON
      * @param {*} groupJson Group attribute JSON 
      */
-    groupOnly: async function (db, model, criteria, groupJson) {
+    groupOnly: async function (model, criteria, groupJson) {
         try {
+            const db = con.db;
             var aggregateArray = [];
             if (criteria.sort) {
                 var sort = criteria.sort;
@@ -257,13 +258,13 @@ module.exports = {
 
     /**
      * Distinct rows
-     * @param {*} db Database
      * @param {string} model Model Name
      * @param {*} criteria Criteria JSON
      * @param {string} distAttr Distinct attribute
      */
-    distinct: async function (db, model, criteria, distAttr) {
+    distinct: async function (model, criteria, distAttr) {
         try {
+            const db = con.db;
             var result = await db.collection(model).distinct(distAttr, criteria);
             return result;
         } catch (err) {
@@ -276,11 +277,11 @@ module.exports = {
 
     /**
      * Insert a row in user log
-     * @param {*} db Database
      * @param {*} attrJson Attribute JSON
      */
-    insertLog: async function (db, attrJson) {
+    insertLog: async function (attrJson) {
         try {
+            const db = con.db;
             attrJson.timestamp = new Date();
             const result = await db.collection(common.userLogModel).insertOne(attrJson);
             //logger.logInfo(common.userLogModel + ': Added to log');
@@ -292,11 +293,11 @@ module.exports = {
 
     /**
      * Insert a row in SMS log
-     * @param {*} db Database
      * @param {*} attrJson Attribute JSON
      */
-    insertSMSLog: async function (db, attrJson) {
+    insertSMSLog: async function (attrJson) {
         try {
+            const db = con.db;
             attrJson.timestamp = new Date();
             const result = await db.collection(common.smsLogModel).insertOne(attrJson);
             //logger.logInfo(common.smsLogModel + ': Added to log');
