@@ -14,7 +14,7 @@ var commondb = require('./commondb');
  * Mvayoo SMS User Credential
  */
 var mvayoo = {
-    userid: 'hchakraborty@asthaitsolutions.com',
+    userid: 'hchakrabortybnm@asthaitsolutions.com',
     password: 'Asth5qwertyuiop@prs',
     senderid: 'AASTHA',
 } 
@@ -23,7 +23,7 @@ var mvayoo = {
  * Bizztel SMS User Credential
  */
 var bizztel = {
-    userid: 'hchakraborty',
+    userid: 'hchakrabortybnm',
     password: 'itsolutionslkjhgfdsa0123',
     senderid: 'LMDEMO'
 } 
@@ -31,26 +31,24 @@ var bizztel = {
 module.exports = {
     /**
      * Send SMS using Mvayoo gateway
-     * @param {*} db Database
      * @param {*} obj Attr JSON
      * @param {string} templatePrefix Message template prefix
      */
-    sendSMS(db, obj, templatePrefix){
+    sendSMS(obj, templatePrefix){
         //var senderId = common.apps[obj.otype].senderid;
         // var senderId = mvayoo.senderid;
-        // this.sendByMvayoo(db, obj, templatePrefix, senderId);
+        // this.sendByMvayoo(obj, templatePrefix, senderId);
         var senderId = bizztel.senderid;
-        this.sendByBizztel(db, obj, templatePrefix, senderId);
+        this.sendByBizztel(obj, templatePrefix, senderId);
     },
 
     /**
      * Send SMS using Mvayoo gateway
-     * @param {*} db Database
      * @param {*} obj Attr JSON
      * @param {string} templatePrefix Message template prefix
      * @param {string} senderId Sender Id
      */
-    sendByMvayoo: function (db, obj, templatePrefix, senderId) {
+    sendByMvayoo: function (obj, templatePrefix, senderId) {
         message = templatePrefix + obj.message;
 
         request
@@ -64,7 +62,7 @@ module.exports = {
                     var log = JSON.parse(JSON.stringify(obj));
                     delete log.message;
                     delete log.mobile;
-                    commondb.insertSMSLog(db, log);
+                    commondb.insertSMSLog(log);
                     logger.logInfo('SMS sent by MVayoo');
                 }
             });
@@ -72,12 +70,11 @@ module.exports = {
 
     /**
      * Send SMS using Bizztel gateway
-     * @param {*} db Database
      * @param {*} obj Attr JSON
      * @param {string} templatePrefix Message template prefix
      * @param {string} senderId Sender Id
      */
-    sendByBizztel: function (db, obj, templatePrefix, senderId) {
+    sendByBizztel: function (obj, templatePrefix, senderId) {
         message = templatePrefix + message;
 
         request
@@ -97,7 +94,7 @@ module.exports = {
                     var log = JSON.parse(JSON.stringify(obj));
                     delete log.message;
                     delete log.mobile;
-                    commondb.insertSMSLog(db, log);
+                    commondb.insertSMSLog(log);
                     logger.logInfo('SMS sent by Bizztel');
                 }
             });

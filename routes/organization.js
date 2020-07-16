@@ -58,7 +58,14 @@ router.post('/create', async function (req, res) {
         });
         dateattrs.forEach(element => {
             if (obj[element]) {
-                obj[element] = new Date(obj[element]);
+                var day = new Date(obj[element]).getDate();
+                var month = new Date(obj[element]).getMonth();
+                var year = new Date(obj[element]).getFullYear();
+                var hour = new Date().getHours();
+                var min = new Date().getMinutes();
+                var sec = new Date().getSeconds();
+                var ms = new Date().getMilliseconds();
+                obj[element] = new Date(year, month, day, hour, min, sec, ms);
             }
             else {
                 switch (element) {
@@ -71,11 +78,16 @@ router.post('/create', async function (req, res) {
                 }
             }
         });
+        if (obj._id) delete obj._id;
+
         if (!obj.status) obj.status = 'Active';
+
         if (!obj.expireon) obj.expireon = new Date(moment(obj.createdon).add(1, 'year').endOf('day'));
+
         for (var key in obj) {
             if (obj[key] == '') delete obj[key];
         }
+        
         var isValid = true;
         var missingAttr = '';
         requiredattrs.forEach(element => {
