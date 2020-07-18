@@ -14,8 +14,6 @@ var multipartMiddleware = multipart();
 var moment = require('moment');
 var path = require('path');
 var fs = require('fs');
-var nodemailer = require('nodemailer');
-var request = require('superagent');
 
 const auth = require('../policies/authorization');
 const commondb = require('../config/commondb');
@@ -24,6 +22,7 @@ const common = require('../config/common');
 const logger = require('../config/logger');
 const pwd = require('../config/password');
 const commonsms = require('../config/commonsms');
+const commonmail = require('../config/commonmail');
 
 const IMAGE_PATH = __dirname + '/../public/images';
 const IMAGE_FOLDER = 'users';
@@ -79,8 +78,6 @@ router.post('/create', async function (req, res) {
       }
     });
 
-    if (obj._id) delete obj._id;
-
     if (!obj.status) {
       obj.status = 'Active';
     }
@@ -108,7 +105,10 @@ router.post('/create', async function (req, res) {
     else obj.addedby = userid;
 
     for (var key in obj) {
-      if (obj[key] == '') delete obj[key];
+      try {
+        if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
+      } catch (err) { }
+      if (key == '_id' || obj[key] == '') delete obj[key];
     }
 
     var isValid = true;
@@ -886,31 +886,13 @@ async function deleteOther(criteria, umodel) {
 }
 
 /**
- * Send user registration confirmation mail
- * @param {*} obj JSON needed to send mail
- * @param {string} status New or change password
+ * Send user registration or password change confirmation mail
+ * @param {*} obj User Information JSON
+ * @param {string} status New User/ Password Change
  */
 function sendConfirmationMail(obj, status) {
-  if(!obj.otype) obj.otype = 'Organization';
-  //Email credential
-  var semail = "pinghost2016@gmail.com";//"mailtest665@gmail.com";
+  if (!obj.otype) obj.otype = 'Company';
 
-  var transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-      type: 'OAuth2',
-      user: semail,
-      clientId: "342317901166-m1sg9ar93urjj58eqgjrd67oboq2ib9f.apps.googleusercontent.com",
-      clientSecret: "7Utk6BsbusLyl-zFRMgexkdo",
-      refreshToken: "1/-e74qKJpBdFHSK0KowTobrYC_IQpboKmWKrBlOArHc4",
-      accessToken: "ya29.Ci-YA9XmHQTQLfjTTc8OvZEhYmCgp1QHy-ZrRZnpkez1p-KxLCLuKxufQB3SiiJqgg",
-      timeout: 3600
-    }
-  });
-
-  var from = common.apps[obj.otype].appname + "<" + semail + ">";
   var to = obj.email;
   var subject = "Password modification message";
   var message = "<p>Hi <strong>" + obj.firstname + "</strong>,</p>";
@@ -937,31 +919,22 @@ function sendConfirmationMail(obj, status) {
   message += "<p>It is an auto-generated e-mail.Hence do not reply.</p>";
   message += "<br><br>";
   message += "<p>Thanks & Regards,</p>";
-  message += "<p>Run Your School Admin</p>";
+  message += "<p>" + common.apps[obj.otype].appname + "</p>";
   var mailOptions = {
-    from: from, // sender address
     to: to, // list of receivers
     subject: subject, // Subject line
     html: message // html body
   };
-  transporter.sendMail(mailOptions, function (error, response) {
-    if (error) {
-      logger.logError(common.apps[obj.otype].appname + ' mail sending error for ' + obj.email);
-      logger.logError(error);
-    }
-    else {
-      logger.logInfo("User registration mail sent");
-    }
-  });
-
+  commonmail.sendMail(mailOptions, common.apps[obj.otype].appname);
 };
 
 /**
- * Send user registration confirmation SMS
- * @param {*} obj JSON needed to send SMS
- * @param {string} status New or change password
+ * Send user registration or password change confirmation SMS
+ * @param {*} obj User Information JSON
+ * @param {string} status New User/ Password Change
  */
 function sendOtp(obj, status) {
+  if (!obj.otype) obj.otype = 'Company';
   var message = '';
   if (status == 'new') {
     message += 'You are successfully registered with ' + common.apps[obj.otype].appname + '. Your ';
@@ -982,7 +955,9 @@ function sendOtp(obj, status) {
     timestamp: new Date(),
     credit: 1,
     message: message,
-    mobile: obj.mobile
+    mobile: obj.mobile,
+    otype: obj.otype
   }
   commonsms.sendSMS(sms, common.smsTempate.member);
 };
+

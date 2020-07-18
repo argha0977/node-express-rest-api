@@ -14,13 +14,13 @@ var multipartMiddleware = multipart();
 var moment = require('moment');
 var path = require('path');
 var fs = require('fs');
-var nodemailer = require('nodemailer');
 
 const auth = require('../policies/authorization');
 const commondb = require('../config/commondb');
 const commonspace = require('../config/commonspace');
 const common = require('../config/common');
 const logger = require('../config/logger');
+const commonmail = require('../config/commonmail');
 
 const IMAGE_PATH = __dirname + '/../public/images';
 const IMAGE_FOLDER = 'organizations';
@@ -78,14 +78,16 @@ router.post('/create', async function (req, res) {
                 }
             }
         });
-        if (obj._id) delete obj._id;
 
         if (!obj.status) obj.status = 'Active';
 
         if (!obj.expireon) obj.expireon = new Date(moment(obj.createdon).add(1, 'year').endOf('day'));
 
         for (var key in obj) {
-            if (obj[key] == '') delete obj[key];
+            try {
+                if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
+            } catch (err) { }
+            if (key == '_id' || obj[key] == '') delete obj[key];
         }
         
         var isValid = true;
@@ -549,28 +551,9 @@ async function deleteOther(criteria, umodel) {
  * @param {*} obj JSON needed to send mail
  */
 function sendConfirmationMail(obj) {
-    if(!obj.otype) obj.otype = 'Organization';
+    if (!obj.otype) obj.otype = 'Company';
 
-    //Email credential
-    var semail = "pinghost2016@gmail.com";//"mailtest665@gmail.com";
-
-    var transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: {
-            type: 'OAuth2',
-            user: semail,
-            clientId: "342317901166-m1sg9ar93urjj58eqgjrd67oboq2ib9f.apps.googleusercontent.com",
-            clientSecret: "7Utk6BsbusLyl-zFRMgexkdo",
-            refreshToken: "1/-e74qKJpBdFHSK0KowTobrYC_IQpboKmWKrBlOArHc4",
-            accessToken: "ya29.Ci-YA9XmHQTQLfjTTc8OvZEhYmCgp1QHy-ZrRZnpkez1p-KxLCLuKxufQB3SiiJqgg",
-            timeout: 3600
-        }
-    });
-    var from = common.apps[obj.otype].appname + "<" + semail + ">";
     var to = obj.email;
-    var bcc = ['email2argha@gmail.com'];
     var subject = common.apps[obj.otype].orgtype + ' Registration';
     var message = "<p>Hi <strong> " + common.apps[obj.otype].orgtype + " Admin</strong>,</p>";
     message += "<p>Congratulations your " + common.apps[obj.otype].orgtype.toLowerCase() + " <strong>" + obj.oname + "</strong> is now registered on " + common.apps[obj.otype].appname + ".</p>";
@@ -583,23 +566,14 @@ function sendConfirmationMail(obj) {
     message += "<p>Thanks & Regards,</p>";
     message += "<p>" + common.apps[obj.otype].appname + " Admin</p>";
     var mailOptions = {
-        from: from, // sender address
-        to: [obj.email], // list of receivers
+        to: [to], // list of receivers
         bcc: [common.bcc],
         subject: subject, // Subject line
         html: message // html body
     };
-    transporter.sendMail(mailOptions, function (error, response) {
-        if (error) {
-            console.log(app.name + ' mail sending error for ' + obj.email);
-            console.log(error);
-        }
-        else {
-
-            console.log("sent mail");
-        }
-    });
+    commonmail.sendMail(mailOptions, common.apps[obj.otype].appname);
 
 };
+
 
 

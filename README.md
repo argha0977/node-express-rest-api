@@ -20,7 +20,7 @@ git clone git@github.com:argha0977/node-express-rest-api.git
 
 ```js
 npm install
-npm install bcrypt  cors mongodb nodemailer onesignal-node superagent winston aws-sdk moment connect-multiparty --save
+npm install bcrypt  cors mongodb nodemailer googleapis onesignal-node superagent winston aws-sdk moment connect-multiparty --save
 ```
 
 ## Run

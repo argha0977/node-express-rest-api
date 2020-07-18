@@ -52,7 +52,7 @@ module.exports = {
         message = templatePrefix + obj.message;
 
         request
-            .get('http://api.mVaayoo.com/mvaayooapi/MessageCompose?user=' + mvayoo.userid + ':' + mvayoo.password + '&senderID=' + senderId + '&receipientno=' + obj.mobile + '&dcs=0&msgtxt=' + obj.message + '&state=4 ')
+            .get('http://api.mVaayoo.com/mvaayooapi/MessageCompose?user=' + mvayoo.userid + ':' + mvayoo.password + '&senderID=' + senderId + '&receipientno=' + obj.mobile + '&dcs=0&msgtxt=' + message + '&state=4 ')
             .end(function (err, resp) {
                 if (err) {
                     logger.logError(err);
@@ -62,6 +62,7 @@ module.exports = {
                     var log = JSON.parse(JSON.stringify(obj));
                     delete log.message;
                     delete log.mobile;
+                    delete log.otype;
                     commondb.insertSMSLog(log);
                     logger.logInfo('SMS sent by MVayoo');
                 }
@@ -75,7 +76,7 @@ module.exports = {
      * @param {string} senderId Sender Id
      */
     sendByBizztel: function (obj, templatePrefix, senderId) {
-        message = templatePrefix + message;
+        message = templatePrefix + obj.message;
 
         request
             .get('http://www.bizztel.com/composeapi')
@@ -84,7 +85,7 @@ module.exports = {
             .query({ route: 2 })
             .query({ senderid: senderId })
             .query({ destination: obj.mobile })
-            .query({ message: obj.message })
+            .query({ message: message })
             .end(function (err, resp) {
                 if (err) {
                     logger.logError(err);
@@ -94,6 +95,7 @@ module.exports = {
                     var log = JSON.parse(JSON.stringify(obj));
                     delete log.message;
                     delete log.mobile;
+                    delete log.otype;
                     commondb.insertSMSLog(log);
                     logger.logInfo('SMS sent by Bizztel');
                 }
