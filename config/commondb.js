@@ -55,23 +55,22 @@ module.exports = {
      */
     updateOne: async function (model, criteria, attrJson) {
         var update = {};
-        if (attrJson['$push'] || attrJson['$pop'] || attrJson['$unset'] ||  attrJson['$set']) {
+        if (attrJson['$push'] || attrJson['$pop'] || attrJson['$unset'] || attrJson['$set']) {
             update = attrJson;
-            if (attrJson['$set']) attrJson = attrJson['$set'];
-            else attrJson = {};
         }
         else {
             update = { $set: attrJson };
         }
         try {
             const db = con.db;
-            const result = await db.collection(model).updateOne(criteria, update);
-            return attrJson;
+            const uresult = await db.collection(model).updateOne(criteria, update);
+            const result = await db.collection(model).findOne(criteria);
+            return result;
         } catch (err) {
             logger.logError(model + ': Error in update one:');
             logger.logError(err);
             var error = { status: 500, message: { error: 'DB error in update of one row in ' + model } };
-            throw error; 
+            throw error;
         }
     },
 

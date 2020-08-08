@@ -87,7 +87,11 @@ router.post('/create', async function (req, res) {
             try {
                 if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
             } catch (err) { }
-            if (key == '_id' || obj[key] == '') delete obj[key];
+            if (typeof (obj[key]) != "boolean") {
+                if (key == '_id' || obj[key] == '') {
+                    delete obj[key];
+                }
+            }
         }
         
         var isValid = true;
@@ -352,10 +356,17 @@ router.get('/showByCode/:ocode', async function (req, res) {
 router.post('/search', async function (req, res) {
     if (auth.isAuthorized(req.headers['authorization'])) {
         var obj = req.body;
-        for (var key in obj) {
-            if (obj[key] == '') delete obj[key];
-        }
         try {
+            for (var key in obj) {
+                try {
+                    if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
+                } catch (err) { }
+                if (typeof (obj[key]) != "boolean") {
+                    if (obj[key] == '') {
+                        delete obj[key];
+                    }
+                }
+            }
             regxattrs.forEach(element => {
                 if (obj[element]) {
                     try {
@@ -402,10 +413,17 @@ router.post('/search', async function (req, res) {
 router.post('/count', async function (req, res) {
     if (auth.isAuthorized(req.headers['authorization'])) {
         var obj = req.body;
-        for (var key in obj) {
-            if (obj[key] == '') delete obj[key];
-        }
         try {
+            for (var key in obj) {
+                try {
+                    if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
+                } catch (err) { }
+                if (typeof (obj[key]) != "boolean") {
+                    if (obj[key] == '') {
+                        delete obj[key];
+                    }
+                }
+            }
             regxattrs.forEach(element => {
                 if (obj[element]) {
                     try {
@@ -494,13 +512,13 @@ router.post('/upload', multipartMiddleware, async function (req, res) {
 router.get('/orgLogo/:file', function (req, res) {
     var file = req.params.file;
     if(file == DUMMY_FILE_NAME) {
-        var filePath = path.resolve(UPLOAD_PATH, file);
+        var filePath = path.resolve(IMAGE_PATH, file);
         fs.createReadStream(filePath).pipe(res);
     }
     else {
         commonspace.get(IMAGE_FOLDER, file, function(err, data){
             if(err) {
-                var filePath = path.resolve(UPLOAD_PATH, DUMMY_FILE_NAME);
+                var filePath = path.resolve(IMAGE_PATH, DUMMY_FILE_NAME);
                 fs.createReadStream(filePath).pipe(res);
             }
             else {

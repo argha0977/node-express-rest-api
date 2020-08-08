@@ -26,10 +26,17 @@ var requiredattrs = [];
 router.post('/search', async function (req, res) {
     if (auth.isAuthorized(req.headers['authorization'])) {
         var obj = req.body;
-        for (var key in obj) {
-            if (obj[key] == '') delete obj[key];
-        }
         try {
+            for (var key in obj) {
+                try {
+                    if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
+                } catch (err) { }
+                if (typeof (obj[key]) != "boolean") {
+                    if (obj[key] == '') {
+                        delete obj[key];
+                    }
+                }
+            }
             regxattrs.forEach(element => {
                 if (obj[element]) {
                     try {
@@ -71,10 +78,17 @@ router.post('/search', async function (req, res) {
 router.post('/count', async function (req, res) {
     if (auth.isAuthorized(req.headers['authorization'])) {
         var obj = req.body;
-        for (var key in obj) {
-            if (obj[key] == '') delete obj[key];
-        }
         try {
+            for (var key in obj) {
+                try {
+                    if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
+                } catch (err) { }
+                if (typeof (obj[key]) != "boolean") {
+                    if (obj[key] == '') {
+                        delete obj[key];
+                    }
+                }
+            }
             regxattrs.forEach(element => {
                 if (obj[element]) {
                     try {

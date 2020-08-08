@@ -11,7 +11,7 @@ const winston = require('winston');
 module.exports = {
     /**
      * Show information message in console
-     * @param {string} data Message to be printerd
+     * @param {*} data Message to be printerd
      */
     logInfo: function (data) {
         var level = 'debug';
@@ -19,7 +19,7 @@ module.exports = {
             level: level,
             format: winston.format.combine(
                 winston.format.timestamp(),
-                winston.format.json()
+                winston.format.simpe()
             ),
         });
         
@@ -29,12 +29,12 @@ module.exports = {
         else {
             logger.add(new winston.transports.File({ filename: level + '.log', level: level }));
         }
-        logger.log({ level: level, message: data });
+        logger.log(level, data);
     },
 
     /**
      * Show error message to the console and store in error.log file
-     * @param {string} data Message to be printed
+     * @param {*} data Message to be printed
      */
     logError: function (data) {
         var level = 'error';
@@ -42,7 +42,7 @@ module.exports = {
             level: level,
             format: winston.format.combine(
                 winston.format.timestamp(),
-                winston.format.json()
+                winston.format.simple()
             ),
         });
 
@@ -52,7 +52,7 @@ module.exports = {
         else {
             logger.add(new winston.transports.File({ filename: level + '.log', level: level }));
         }
-        logger.log({ level: level, message: data });
+        logger.log(level, data);
     }
 }
 

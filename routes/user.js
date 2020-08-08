@@ -108,7 +108,11 @@ router.post('/create', async function (req, res) {
       try {
         if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
       } catch (err) { }
-      if (key == '_id' || obj[key] == '') delete obj[key];
+      if (typeof (obj[key]) != "boolean") {
+        if (key == '_id' || obj[key] == '') {
+          delete obj[key];
+        }
+      }
     }
 
     var isValid = true;
@@ -436,10 +440,17 @@ router.get('/showUser/:ocode/:userid', async function (req, res) {
 router.post('/search', async function (req, res) {
   if (auth.isAuthorized(req.headers['authorization'])) {
     var obj = req.body;
-    for (var key in obj) {
-      if (obj[key] == '') delete obj[key];
-    }
     try {
+      for (var key in obj) {
+        try {
+          if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
+        } catch (err) { }
+        if (typeof (obj[key]) != "boolean") {
+          if (obj[key] == '') {
+            delete obj[key];
+          }
+        }
+      }
       regxattrs.forEach(element => {
         if (obj[element]) {
           try {
@@ -486,10 +497,17 @@ router.post('/search', async function (req, res) {
 router.post('/count', async function (req, res) {
   if (auth.isAuthorized(req.headers['authorization'])) {
     var obj = req.body;
-    for (var key in obj) {
-      if (obj[key] == '') delete obj[key];
-    }
     try {
+      for (var key in obj) {
+        try {
+          if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
+        } catch (err) { }
+        if (typeof (obj[key]) != "boolean") {
+          if (obj[key] == '') {
+            delete obj[key];
+          }
+        }
+      }
       regxattrs.forEach(element => {
         if (obj[element]) {
           try {
@@ -751,13 +769,13 @@ router.post('/upload', multipartMiddleware, async function (req, res) {
 router.get('/profilePic/:file', function (req, res) {
   var file = req.params.file;
   if (file == DUMMY_FILE_NAME) {
-    var filePath = path.resolve(UPLOAD_PATH, file);
+    var filePath = path.resolve(IMAGE_PATH, file);
     fs.createReadStream(filePath).pipe(res);
   }
   else {
     commonspace.get(IMAGE_FOLDER, file, function (err, data) {
       if (err) {
-        var filePath = path.resolve(UPLOAD_PATH, DUMMY_FILE_NAME);
+        var filePath = path.resolve(IMAGE_PATH, DUMMY_FILE_NAME);
         fs.createReadStream(filePath).pipe(res);
       }
       else {
@@ -787,24 +805,30 @@ router.post('/signin', async function (req, res) {
         criteria.ocode = { $exists: false };
       }
       var result = await commondb.findOne(model, criteria, {});
-      var match = await pwd.comparePassword(obj.password, result.password);
-      if (match) {
-        log = {};
-        log.ocode = result.ocode;
-        log.userid = obj.userid;
-        log.type = 'Sign in';
-        log.reference = result.userid;
-        log.apptype = apptype;
-        log.message = ' has been singed in';
-        log.ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
-          req.connection.remoteAddress ||
-          req.socket.remoteAddress ||
-          req.connection.socket.remoteAddress;
-        delete result.password;
-        res.status(200).json(result);
-        commondb.insertLog(log);
+      if(result.status == 'Active') {
+        var match = await pwd.comparePassword(obj.password, result.password);
+        if (match) {
+          log = {};
+          log.ocode = result.ocode;
+          log.userid = obj.userid;
+          log.type = 'Sign in';
+          log.reference = result.userid;
+          log.apptype = apptype;
+          log.message = ' has been singed in';
+          log.ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
+            req.connection.remoteAddress ||
+            req.socket.remoteAddress ||
+            req.connection.socket.remoteAddress;
+          delete result.password;
+          res.status(200).json(result);
+          commondb.insertLog(log);
+        }
+        else res.status(404).json({ error: 'The userid or password you entered is incorrect' });
       }
-      else res.status(404).json({ error: 'The userid or password you entered is incorrect' });
+      else {
+        var error = { status: 400, message: { error: 'This account is not active. Please contact your administrator'}};
+        throw error;
+      }
     } catch (err) {
       res.status(err.status).json(err.message);
     }

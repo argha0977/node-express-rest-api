@@ -82,16 +82,6 @@ var BCC = ['email2argha@gmail.com'];
  */
 var APP_TYPE = 'Web';
 
-/**
- * Mvayoo SMS User Id
- */
-var SMS_USER = 'user@gmail.com';
-
-/**
- * MVayoo SMS Password
- */
-var SMS_PASSWORD = 'pass';
-
 var SMS_TEMPLATES = {
     member: 'Dear Member ',
     student: 'Dear Student ',
@@ -290,6 +280,4 @@ module.exports.smsLogModel = SMS_LOG_MODEL;
 module.exports.bcc = BCC;
 module.exports.appType = APP_TYPE;
 
-module.exports.smsUser = SMS_USER;
-module.exports.smsPassword = SMS_PASSWORD;
 module.exports.smsTempate = SMS_TEMPLATES;
