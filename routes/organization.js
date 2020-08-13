@@ -278,7 +278,7 @@ router.post('/delete', async function (req, res) {
             if (obj._id != -1) {
                 var criteria = { _id: obj._id };
                 var old = await commondb.findOne( model, criteria, {});
-                var collInfos = await db.listCollections().toArray();
+                var collInfos = await commondb.getCollections();
                 //Delete all rows of all models for this organization
                 for (var i = 0; i < collInfos.length; i++) {
                     var ucriteria = { ocode: obj.ocode };
@@ -342,6 +342,22 @@ router.get('/showByCode/:ocode', async function (req, res) {
         try {
             var criteria = { ocode: req.params.ocode };
             var result = await commondb.findOne( model, criteria, {});
+            res.status(200).json(result);
+        } catch (err) {
+            res.status(err.status).json(err.message);
+        }
+    }
+    else {//If authorization failed
+        res.status(403).json({ error: 'Request forbidden! Authorization key is incorrect' });
+    }
+});
+
+/*Get all Organizations*/
+router.get('/showAll', async function (req, res) {
+    if (auth.isAuthorized(req.headers['authorization'])) {
+        try {
+            var criteria = { sort: {oname: 1} };
+            var result = await commondb.find(model, criteria, {});
             res.status(200).json(result);
         } catch (err) {
             res.status(err.status).json(err.message);

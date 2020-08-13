@@ -305,4 +305,21 @@ module.exports = {
             logger.logError(err);
         }
     },
+
+
+    /**
+     * Get All collections of database
+     */
+    getCollections: async function () {
+        try {
+            const db = con.db;
+            const result = await db.listCollections().toArray();
+            return result;
+        } catch (err) {
+            logger.logError('Error in searching collections of database:');
+            logger.logError(err);
+            var error = { status: 500, message: { error: 'DB error in searching collections of database' } };
+            throw error;
+        }
+    },
 }
