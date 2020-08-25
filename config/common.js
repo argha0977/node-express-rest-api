@@ -214,6 +214,15 @@ module.exports = {
         var SCALE_WORD = (typeof IS_SOUTH_ASIAN != "undefined" && IS_SOUTH_ASIAN) ? SCALE_WORD_SOUTH_ASIAN : SCALE_WORD_WESTERN;
 
 
+        //Return title case 
+        function sentenceCase(str) {
+            if ((str === null) || (str === ''))
+                return false;
+            else
+                str = str.toString();
+
+            return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
+        }
         // Return string of first three digits, padded with zeros if needed
         function get_first_3(str) {
             return ('000' + str).substr(-(3));
@@ -249,7 +258,8 @@ module.exports = {
             return recurse(newResult, ++scaleIdx, get_first(rest), get_rest(rest));
         }
 
-        return recurse('', 0, get_first_3(String(int)), get_rest_3(String(int)));
+        var wardnum = recurse('', 0, get_first_3(String(int)), get_rest_3(String(int)));
+        return sentenceCase(wardnum) + 'Only';
     }
 }
 
