@@ -3,7 +3,7 @@ module.exports = {
     name: "NODE_EXPRES_API",
     script: './bin/www',
     watch: true,
-    ignore_watch:['node_modules', '*.log'],
+    ignore_watch: ["node_modules", "public", ".git", "*.log", "ecosystem.config.js"],
     exp_backoff_restart_delay: 100,
     max_memory_restart: '900M',
     /* instances: 2,

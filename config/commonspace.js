@@ -137,5 +137,38 @@ module.exports = {
                 callback(null, { message: 'Removed ' + folderName + '/' + fileName});
             }
         });
-    }
+    },
+
+    /**
+     * Upload file to SPACE
+     * @param {string} sourceFolderName Source Folder Name in SPACE
+     * @param {string} sourceFileName Source File Name
+     * @param {string} targetFolderName Folder name of SPACE
+     * @param {string} targetFileName Target File Name
+     * @param {*} callback Callback function
+     */
+    copy: function (sourceFolderName, sourceFileName, targetFolderName, targetFileName, callback) {
+        var targetPath = common.spacePath + targetFolderName + '/' + targetFileName;
+        var sourcePath = common.spaceBucket + '/' + common.spacePath + sourceFolderName + '/' + sourceFileName;
+        try {
+            var params = {
+                Bucket: common.spaceBucket,
+                Key: targetPath,
+                CopySource: sourcePath,
+                ACL: 'public-read'
+            };
+            s3.copyObject(params, function (err, data) {
+                if (err) {
+                    logger.logError(err);
+                    var error = { status: 500, message: { error: 'file upload failed in ' + targetFolderName + '. Please try again.' } };
+                    callback(error, null);
+                }
+                else callback(null, { fileName: targetFileName });
+            });
+        } catch (err) {
+            logger.logError(err);
+            var error = { status: 500, message: { error: 'file upload failed in ' + targetFolderName + '. Please try again.' } };
+            callback(error, null);
+        }
+    },
 }
