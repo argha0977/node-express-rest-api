@@ -19,7 +19,7 @@ module.exports = {
             level: level,
             format: winston.format.combine(
                 winston.format.timestamp(),
-                winston.format.simpe()
+                winston.format.simple()
             ),
         });
         

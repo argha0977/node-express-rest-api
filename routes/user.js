@@ -108,7 +108,7 @@ router.post('/create', async function (req, res) {
       try {
         if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
       } catch (err) { }
-      if (typeof (obj[key]) != "boolean") {
+      if (typeof (obj[key]) != "boolean" && typeof (obj[key]) != "number") {
         if (key == '_id' || obj[key] == '') {
           delete obj[key];
         }

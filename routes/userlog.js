@@ -103,7 +103,7 @@ router.post('/count', async function (req, res) {
                 delete obj.start;
                 delete obj.end;
             }
-            var result = await commondb.count(model, obj, {});
+            var result = await commondb.count(model, obj);
             res.status(200).json(result);
         } catch (err) {
             res.status(err.status).json(err.message);
