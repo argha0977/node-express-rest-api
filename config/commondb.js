@@ -213,11 +213,11 @@ module.exports = {
                 delete criteria.hint;
             }
             if (criteria['$text']) {
-                var result = await db.collection(model).find(criteria, attrJson).sort(sort).skip(skip).limit(limit).toArray();
+                var result = await db.collection(model).find(criteria).project(attrJson).sort(sort).skip(skip).limit(limit).toArray();
                 return result;
             }
             else {
-                var result = await db.collection(model).find(criteria, attrJson).sort(sort).hint(hint).skip(skip).limit(limit).toArray();
+                var result = await db.collection(model).find(criteria).project(attrJson).sort(sort).hint(hint).skip(skip).limit(limit).toArray();
                 return result;
             }
         } catch (err) {
