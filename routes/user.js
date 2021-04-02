@@ -48,6 +48,14 @@ router.post('/create', async function (req, res) {
       delete obj.apptype;
     }
 
+    var ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
+      req.remoteAddress ||
+      req.socket.remoteAddress;
+    if (obj.ipaddress) {
+      ipaddress = obj.ipaddress;
+      delete obj.ipaddress;
+    }
+
     floatattrs.forEach(element => {
       if (obj[element]) {
         obj[element] = parseFloat(obj[element]);
@@ -196,10 +204,7 @@ router.post('/create', async function (req, res) {
           log.reference = obj.userid;
           log.apptype = apptype
           log.message = ' user has been added';
-          log.ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
-            req.connection.remoteAddress ||
-            req.socket.remoteAddress ||
-            req.connection.socket.remoteAddress;
+          log.ipaddress = ipaddress;
           commondb.insertLog(log);
         }
       } catch (err) {
@@ -222,6 +227,14 @@ router.post('/update', async function (req, res) {
     if (obj.apptype) {
       apptype = obj.apptype;
       delete obj.apptype;
+    }
+
+    var ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
+      req.remoteAddress ||
+      req.socket.remoteAddress;
+    if (obj.ipaddress) {
+      ipaddress = obj.ipaddress;
+      delete obj.ipaddress;
     }
 
     floatattrs.forEach(element => {
@@ -300,10 +313,7 @@ router.post('/update', async function (req, res) {
           if (logmessage) log.message = logmessage + ' of ';
           else log.message = '';
           log.message += ' user has been updated';
-          log.ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
-            req.connection.remoteAddress ||
-            req.socket.remoteAddress ||
-            req.connection.socket.remoteAddress;
+          log.ipaddress = ipaddress;
           commondb.insertLog(log);
         }
       }
@@ -327,6 +337,14 @@ router.post('/delete', async function (req, res) {
     if (obj.apptype) {
       apptype = obj.apptype;
       delete obj.apptype;
+    }
+
+    var ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
+      req.remoteAddress ||
+      req.socket.remoteAddress;
+    if (obj.ipaddress) {
+      ipaddress = obj.ipaddress;
+      delete obj.ipaddress;
     }
 
     userid = 'Guest';
@@ -360,10 +378,7 @@ router.post('/delete', async function (req, res) {
         log.reference = obj.userid;
         log.apptype = apptype;
         log.message = ' user has been removed';
-        log.ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
-          req.connection.remoteAddress ||
-          req.socket.remoteAddress ||
-          req.connection.socket.remoteAddress;
+        log.ipaddress = ipaddress;
         commondb.insertLog(log);
         if (old.image) {
           var oldName = old.image;
@@ -562,6 +577,14 @@ router.post('/updatePassword', async function (req, res) {
       delete obj.apptype;
     }
 
+    var ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
+      req.remoteAddress ||
+      req.socket.remoteAddress;
+    if (obj.ipaddress) {
+      ipaddress = obj.ipaddress;
+      delete obj.ipaddress;
+    }
+
     var otype = common.apps.Organization;
     if (obj.otype) {
       otype = obj.otype;
@@ -619,10 +642,7 @@ router.post('/updatePassword', async function (req, res) {
         log.reference = obj.userid;
         log.apptype = apptype;
         log.message = ' password of user has been updated';
-        log.ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
-          req.connection.remoteAddress ||
-          req.socket.remoteAddress ||
-          req.connection.socket.remoteAddress;
+        log.ipaddress = ipaddress;
         commondb.insertLog(log);
       }
       else res.status(500).json({ error: 'ID is not a valid string' });
@@ -646,6 +666,14 @@ router.post('/resetPassword', async function (req, res) {
     if (obj.apptype) {
       apptype = obj.apptype;
       delete obj.apptype;
+    }
+
+    var ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
+      req.remoteAddress ||
+      req.socket.remoteAddress;
+    if (obj.ipaddress) {
+      ipaddress = obj.ipaddress;
+      delete obj.ipaddress;
     }
 
     var otype = common.apps.Organization;
@@ -706,10 +734,7 @@ router.post('/resetPassword', async function (req, res) {
         log.reference = obj.userid;
         log.apptype = apptype;
         log.message = ' password of user has been reset';
-        log.ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
-          req.connection.remoteAddress ||
-          req.socket.remoteAddress ||
-          req.connection.socket.remoteAddress;
+        log.ipaddress = ipaddress;
         commondb.insertLog(log);
       }
       else res.status(500).json({ error: 'ID is not a valid string' });
@@ -796,6 +821,14 @@ router.post('/signin', async function (req, res) {
       delete obj.apptype;
     }
 
+    var ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
+      req.remoteAddress ||
+      req.socket.remoteAddress;
+    if (obj.ipaddress) {
+      ipaddress = obj.ipaddress;
+      delete obj.ipaddress;
+    }
+
     try {
       var criteria = { $or: [{ email: obj.userid }, { mobile: obj.userid }, { userid: obj.userid }] };
       if (obj.ocode) {
@@ -815,10 +848,7 @@ router.post('/signin', async function (req, res) {
           log.reference = result.userid;
           log.apptype = apptype;
           log.message = ' has been singed in';
-          log.ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
-            req.connection.remoteAddress ||
-            req.socket.remoteAddress ||
-            req.connection.socket.remoteAddress;
+          log.ipaddress = ipaddress;
           delete result.password;
           res.status(200).json(result);
           commondb.insertLog(log);
@@ -849,6 +879,14 @@ router.post('/signout', async function (req, res) {
       delete obj.apptype;
     }
 
+    var ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
+      req.remoteAddress ||
+      req.socket.remoteAddress;
+    if (obj.ipaddress) {
+      ipaddress = obj.ipaddress;
+      delete obj.ipaddress;
+    }
+
     try {
       log = {};
       log.ocode = result.ocode;
@@ -857,10 +895,7 @@ router.post('/signout', async function (req, res) {
       log.reference = result.userid;
       log.apptype = apptype;
       log.message = ' has been singed out';
-      log.ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
-        req.connection.remoteAddress ||
-        req.socket.remoteAddress ||
-        req.connection.socket.remoteAddress;
+      log.ipaddress = ipaddress;
       res.status(200).json({ data: 'Signed out' });
       commondb.insertLog(log);
     } catch (err) {

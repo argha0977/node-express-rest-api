@@ -46,6 +46,14 @@ router.post('/create', async function (req, res) {
             delete obj.apptype;
         }
 
+        var ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
+            req.remoteAddress ||
+            req.socket.remoteAddress;
+        if (obj.ipaddress) {
+            ipaddress = obj.ipaddress;
+            delete obj.ipaddress;
+        }
+
         floatattrs.forEach(element => {
             if (obj[element]) {
                 obj[element] = parseFloat(obj[element]);
@@ -154,10 +162,7 @@ router.post('/create', async function (req, res) {
                 log.reference = obj.ocode;
                 log.apptype = apptype
                 log.message = ' organization has been added';
-                log.ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
-                    req.connection.remoteAddress ||
-                    req.socket.remoteAddress ||
-                    req.connection.socket.remoteAddress;
+                log.ipaddress = ipaddress;
                 commondb.insertLog( log);
             } catch (err) {
                 res.status(err.status).json(err.message);
@@ -179,6 +184,14 @@ router.post('/update', async function (req, res) {
         if (obj.apptype) {
             apptype = obj.apptype;
             delete obj.apptype;
+        }
+
+        var ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
+            req.remoteAddress ||
+            req.socket.remoteAddress;
+        if (obj.ipaddress) {
+            ipaddress = obj.ipaddress;
+            delete obj.ipaddress;
         }
 
         floatattrs.forEach(element => {
@@ -238,10 +251,7 @@ router.post('/update', async function (req, res) {
                 if (logmessage) log.message = logmessage + ' of ';
                 else log.message = '';
                 log.message += ' organization has been updated';
-                log.ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
-                    req.connection.remoteAddress ||
-                    req.socket.remoteAddress ||
-                    req.connection.socket.remoteAddress;
+                log.ipaddress = ipaddress;
                 commondb.insertLog( log);
             }
             else res.status(500).json({ error: 'ID is not a valid string' });
@@ -264,6 +274,14 @@ router.post('/delete', async function (req, res) {
         if (obj.apptype) {
             apptype = obj.apptype;
             delete obj.apptype;
+        }
+
+        var ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
+            req.remoteAddress ||
+            req.socket.remoteAddress;
+        if (obj.ipaddress) {
+            ipaddress = obj.ipaddress;
+            delete obj.ipaddress;
         }
 
         userid = 'Guest';
@@ -292,10 +310,7 @@ router.post('/delete', async function (req, res) {
                 log.reference = obj.ocode;
                 log.apptype = apptype;
                 log.message = ' organization has been removed';
-                log.ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
-                    req.connection.remoteAddress ||
-                    req.socket.remoteAddress ||
-                    req.connection.socket.remoteAddress;
+                log.ipaddress = ipaddress;
                 commondb.insertLog( log);
                 if(old.logo) {
                     var oldName = old.logo;

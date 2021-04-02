@@ -147,7 +147,7 @@ module.exports = {
     findOne: async function (model, criteria, attrJson) {
         try {
             const db = con.db;
-            var result = await db.collection(model).findOne(criteria, attrJson);
+            var result = await db.collection(model).findOne(criteria, { projection: attrJson });
             if(result) return result;
             else {
                 var error = { status: 404, message: { error: 'Not present in ' + model } };
