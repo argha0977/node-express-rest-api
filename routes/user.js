@@ -23,6 +23,7 @@ const logger = require('../config/logger');
 const pwd = require('../config/password');
 const commonsms = require('../config/commonsms');
 const commonmail = require('../config/commonmail');
+const base64 = require('../policies/base64');
 
 const IMAGE_PATH = __dirname + '/../public/images';
 const IMAGE_FOLDER = 'users';
@@ -186,9 +187,16 @@ router.post('/create', async function (req, res) {
             obj['userid'] = uid;
           }
           //Generate OTP and set hash of the OTP
-          var password = pwd.generateOTP();
+          var password = '';
+          if(obj.password) {
+            password = obj.password;
+            obj.onetime = false;
+          }
+          else {
+            password = pwd.generateOTP();
+            obj.onetime = true;
+          }
           var hashPassword = await pwd.passwordHash(password);
-          obj.onetime = true;
           obj.password = hashPassword;
           //Insert
           var result = await commondb.insertOne(model, obj);
@@ -831,16 +839,26 @@ router.post('/signin', async function (req, res) {
 
     try {
       var criteria = { $or: [{ email: obj.userid }, { mobile: obj.userid }, { userid: obj.userid }] };
-      if (obj.ocode) {
-        criteria.ocode = obj.ocode;
-      }
-      else {
-        criteria.ocode = { $exists: false };
-      }
       var result = await commondb.findOne(model, criteria, {});
       if(result.status == 'Active') {
         var match = await pwd.comparePassword(obj.password, result.password);
         if (match) {
+          //Generate Base64 user token
+          var tokenJson = { o: result.ocode, u: result.userid, ll: new Date() };
+          result.usertoken = base64.encode(JSON.stringify(tokenJson));
+          delete result.password;
+          //Organization expiry checking
+          /* if(result.ocode) {
+            var organization = await commondb.findOne('organization', { ocode: result.ocode }, { expiredon: 1, oname: 1, _id: 0})
+            if(moment().isAfter(organization.expiredon)) {
+              var err = {
+                status: 400,
+                message: { error: 'Service for your organization has been expired.'}
+              }
+              throw err;
+            }
+          } */
+          res.status(200).json(result);
           log = {};
           log.ocode = result.ocode;
           log.userid = obj.userid;
@@ -849,8 +867,6 @@ router.post('/signin', async function (req, res) {
           log.apptype = apptype;
           log.message = ' has been singed in';
           log.ipaddress = ipaddress;
-          delete result.password;
-          res.status(200).json(result);
           commondb.insertLog(log);
         }
         else res.status(404).json({ error: 'The userid or password you entered is incorrect' });
@@ -860,6 +876,7 @@ router.post('/signin', async function (req, res) {
         throw error;
       }
     } catch (err) {
+      console.log(err);
       res.status(err.status).json(err.message);
     }
   }
@@ -900,6 +917,69 @@ router.post('/signout', async function (req, res) {
       commondb.insertLog(log);
     } catch (err) {
       res.status(err.status).json(err.message);
+    }
+  }
+  else {//If authorization failed
+    res.status(403).json({ error: 'Request forbidden! Authorization key is incorrect' });
+  }
+});
+
+/*Verify User Token and Send User Info*/
+router.post('/verifyToken', async function (req, res) {
+  if (auth.isAuthorized(req.headers['authorization'])) {
+    try {
+      var obj = req.body;
+
+      var apptype = common.appType;
+      if (obj.apptype) {
+        apptype = obj.apptype;
+        delete obj.apptype;
+      }
+      //Decode the user token
+      var usertoken = base64.decode(obj.usertoken);
+      try {
+        var tokenJson = JSON.parse(usertoken);
+      } catch (error) {
+        var error = {
+          status: 500,
+          message: { error: 'Token is not in correct format' }
+        };
+        throw error;
+      }
+
+      //Find user info
+      var criteria = { userid: tokenJson.u };
+      if (tokenJson.o) criteria.ocode = tokenJson.o;
+      var result = await commondb.findOne(model, criteria, {});
+      delete result.password;
+      result.usertoken = obj.usertoken;
+      if (result.status == 'Inactive') {
+        var err = {
+          status: 400,
+          message: { error: 'Your account has been deactivated. Please contact with your administrator.' }
+        }
+        throw err;
+      }
+      if (moment().isSameOrBefore(moment(tokenJson.ll).add(3, 'months'))) {
+        res.status(200).json(result);
+      }
+      else {
+        var error = {
+          status: 400,
+          message: { error: 'This token has been expired' }
+        }
+        throw error;
+      }
+    } catch (err) {
+      console.log(err);
+      if (err) {
+        if (err.status == 404) res.status(404).json({ error: 'Your account has been removed. Please contact with your administrator.' });
+        else res.status(err.status).json(err.message);
+      }
+      else {
+        logger.logError(err);
+        res.status(500).json({ error: "API error! Please try gain later" });
+      }
     }
   }
   else {//If authorization failed
