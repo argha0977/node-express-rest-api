@@ -300,7 +300,7 @@ router.post('/delete', async function (req, res) {
                 //Delete all rows of all models for this organization
                 for (var i = 0; i < collInfos.length; i++) {
                     var ucriteria = { ocode: obj.ocode };
-                    await deleteOther(ucriteria, collInfos[i].name, db);
+                    await deleteOther(ucriteria, collInfos[i].name);
                 }
                 res.status(200).json({ message: obj.oname + ' organization has been successfully deleted' });
                 var log = {};
