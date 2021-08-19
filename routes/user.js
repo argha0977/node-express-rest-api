@@ -14,6 +14,7 @@ var multipartMiddleware = multipart();
 var moment = require('moment');
 var path = require('path');
 var fs = require('fs');
+const jwt = require('jsonwebtoken');
 
 const auth = require('../policies/authorization');
 const commondb = require('../config/commondb');
@@ -24,6 +25,7 @@ const pwd = require('../config/password');
 const commonsms = require('../config/commonsms');
 const commonmail = require('../config/commonmail');
 const base64 = require('../policies/base64');
+const userauth = require('../middleware/userauth');
 
 const IMAGE_PATH = __dirname + '/../public/images';
 const IMAGE_FOLDER = 'users';
@@ -840,12 +842,12 @@ router.post('/signin', async function (req, res) {
     try {
       var criteria = { $or: [{ email: obj.userid }, { mobile: obj.userid }, { userid: obj.userid }] };
       var result = await commondb.findOne(model, criteria, {});
-      if(result.status == 'Active') {
+      if (result.status == 'Active') {
         var match = await pwd.comparePassword(obj.password, result.password);
         if (match) {
           //Generate Base64 user token
-          var tokenJson = { o: result.ocode, u: result.userid, ll: new Date() };
-          result.usertoken = base64.encode(JSON.stringify(tokenJson));
+          /* var tokenJson = { o: result.ocode, u: result.userid, ll: new Date() };
+          result.usertoken = base64.encode(JSON.stringify(tokenJson)); */
           delete result.password;
           //Organization expiry checking
           /* if(result.ocode) {
@@ -858,6 +860,14 @@ router.post('/signin', async function (req, res) {
               throw err;
             }
           } */
+          //Generate JWT Token for the session
+          var user = { userid: result.userid, ocode: result.ocode, apptype: apptype };
+          const usertoken = jwt.sign(user, common.tokenSecret,
+            /* {
+              expiresIn: "2m",
+            } */
+          );
+          result.usertoken = usertoken;
           res.status(200).json(result);
           log = {};
           log.ocode = result.ocode;
@@ -872,7 +882,7 @@ router.post('/signin', async function (req, res) {
         else res.status(404).json({ error: 'The userid or password you entered is incorrect' });
       }
       else {
-        var error = { status: 400, message: { error: 'This account is not active. Please contact your administrator'}};
+        var error = { status: 400, message: { error: 'This account is not active. Please contact your administrator' } };
         throw error;
       }
     } catch (err) {
@@ -925,18 +935,12 @@ router.post('/signout', async function (req, res) {
 });
 
 /*Verify User Token and Send User Info*/
-router.post('/verifyToken', async function (req, res) {
+router.get('/verifyToken', userauth, async function (req, res) {
   if (auth.isAuthorized(req.headers['authorization'])) {
     try {
-      var obj = req.body;
 
-      var apptype = common.appType;
-      if (obj.apptype) {
-        apptype = obj.apptype;
-        delete obj.apptype;
-      }
       //Decode the user token
-      var usertoken = base64.decode(obj.usertoken);
+      /* var usertoken = base64.decode(obj.usertoken);
       try {
         var tokenJson = JSON.parse(usertoken);
       } catch (error) {
@@ -945,28 +949,38 @@ router.post('/verifyToken', async function (req, res) {
           message: { error: 'Token is not in correct format' }
         };
         throw error;
-      }
+      } */
 
-      //Find user info
-      var criteria = { userid: tokenJson.u };
-      if (tokenJson.o) criteria.ocode = tokenJson.o;
-      var result = await commondb.findOne(model, criteria, {});
-      delete result.password;
-      result.usertoken = obj.usertoken;
-      if (result.status == 'Inactive') {
-        var err = {
-          status: 400,
-          message: { error: 'Your account has been deactivated. Please contact with your administrator.' }
+      var tokenJson = req.tokenJson;
+      if (tokenJson) {
+        //Find user info
+        var criteria = { userid: tokenJson.userid };
+        var result = await commondb.findOne(model, criteria, {});
+        delete result.password;
+        result.usertoken = req.body.token || req.query.token || req.headers["user-token"];
+        if (result.status == 'Inactive') {
+          var err = {
+            status: 400,
+            message: { error: 'Your account has been deactivated. Please contact with your administrator.' }
+          }
+          throw err;
         }
-        throw err;
-      }
-      if (moment().isSameOrBefore(moment(tokenJson.ll).add(3, 'months'))) {
         res.status(200).json(result);
+        /* if (moment().isSameOrBefore(moment(tokenJson.ll).add(3, 'months'))) {
+          res.status(200).json(result);
+        }
+        else {
+          var error = {
+            status: 400,
+            message: { error: 'This token has been expired' }
+          }
+          throw error;
+        } */
       }
       else {
         var error = {
           status: 400,
-          message: { error: 'This token has been expired' }
+          message: { error: 'This token has either been expired or incorrect key' }
         }
         throw error;
       }

@@ -82,6 +82,11 @@ var BCC = ['email2argha@gmail.com'];
  */
 var APP_TYPE = 'Web';
 
+/**
+ * Token Secret
+ */
+var TOKEN_SECRET = 's06Tm55ts%^S9sX';
+
 var SMS_TEMPLATES = {
     member: 'Dear Member ',
     student: 'Dear Student ',
@@ -289,5 +294,7 @@ module.exports.smsLogModel = SMS_LOG_MODEL;
 
 module.exports.bcc = BCC;
 module.exports.appType = APP_TYPE;
+
+module.exports.tokenSecret = TOKEN_SECRET;
 
 module.exports.smsTempate = SMS_TEMPLATES;
