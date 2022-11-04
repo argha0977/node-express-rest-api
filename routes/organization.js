@@ -484,6 +484,7 @@ router.post('/search', async function (req, res) {
                 }
                 delete obj.date;
             }
+            if (!obj.status) obj.status = { $ne: 'Removed' };
             var result = await commondb.find(model, obj, {});
             res.status(200).json(result);
         } catch (err) {
