@@ -120,6 +120,8 @@ router.post('/create', async function (req, res) {
         }
         else obj.addedby = userid;
 
+        if (!obj.status) obj.status = 'Active';
+
         if (isValid) {
             try {
                 var ocode = '';
