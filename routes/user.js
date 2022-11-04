@@ -846,7 +846,7 @@ router.post('/signin', async function (req, res) {
         var match = await pwd.comparePassword(obj.password, result.password);
         if (match) {
           if (result.ocode) {
-            var organization = await commondb.findOne('organization', { ocode: result.ocode }, { expiredon: 1, oname: 1, status: 1, _id: 0 });
+            var organization = await commondb.findOne('organization', { ocode: result.ocode }, { expiredon: 1, oname: 1, status: 1, features: 1, _id: 0 });
             if (organization.status == 'Removed') {
               var error = {
                 status: 404,
@@ -862,6 +862,7 @@ router.post('/signin', async function (req, res) {
               }
               throw err;
             } */
+            if (organization.features) result.features = organization.features;
           }
           //Generate Base64 user token
           /* var tokenJson = { o: result.ocode, u: result.userid, ll: new Date() };
