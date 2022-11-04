@@ -542,6 +542,7 @@ router.post('/count', async function (req, res) {
                 }
                 delete obj.date;
             }
+            if (!obj.status) obj.status = { $ne: 'Removed' };
             var result = await commondb.count( model, obj, {});
             res.status(200).json(result);
         } catch (err) {
