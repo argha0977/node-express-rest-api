@@ -265,11 +265,10 @@ router.post('/update', async function (req, res) {
     }
 });
 
-/*Delete */
+/*Mark for Delete */
 router.post('/delete', async function (req, res) {
     if (auth.isAuthorized(req.headers['authorization'])) {
         var obj = req.body;
-
         var apptype = common.appType;
         if (obj.apptype) {
             apptype = obj.apptype;
@@ -295,8 +294,63 @@ router.post('/delete', async function (req, res) {
             obj._id = (hex.test(obj._id)) ? new ObjectID.createFromHexString(obj._id) : -1;
             if (obj._id != -1) {
                 var criteria = { _id: obj._id };
-                var old = await commondb.findOne( model, criteria, {});
+                var old = await commondb.findOne(model, criteria, {});
+                var updateAttr = { status: 'Removed' };
+                var result = await commondb.updateOne(model, criteria, updateAttr);
+                res.status(200).json({ message: obj.oname + ' organization has been successfully deleted' });
+                var log = {};
+                //log.ocode = obj.ocode;
+                log.userid = userid;
+                log.type = 'Delete';
+                log.reference = obj.ocode;
+                log.apptype = apptype;
+                log.message = ' organization has been removed';
+                log.ipaddress = ipaddress;
+                commondb.insertLog(log);
+            }
+            else res.status(500).json({ error: 'ID is not a valid string' });
+        } catch (err) {
+            if (!err) res.status(500).json({ error: 'API error! Please trye after some time' })
+            else res.status(err.status ? err.status : 500).json(err.message ? err.message : { error: 'DB error! Please trye after some time' });
+        }
+    }
+    else {//If authorization failed
+        res.status(403).json({ error: 'Request forbidden! Authorization key is incorrect' });
+    }
+});
+
+/*Delete Permanently */
+router.post('/remove', async function (req, res) {
+    if (auth.isAuthorized(req.headers['authorization'])) {
+        var obj = req.body;
+        var apptype = common.appType;
+        if (obj.apptype) {
+            apptype = obj.apptype;
+            delete obj.apptype;
+        }
+
+        var ipaddress = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
+            req.remoteAddress ||
+            req.socket.remoteAddress;
+        if (obj.ipaddress) {
+            ipaddress = obj.ipaddress;
+            delete obj.ipaddress;
+        }
+
+        userid = 'Guest';
+        if (obj.userid) {
+            userid = obj.userid;
+            delete obj.userid;
+        }
+
+        try {
+            var hex = /[0-9A-Fa-f]{24}/g;
+            obj._id = (hex.test(obj._id)) ? new ObjectID.createFromHexString(obj._id) : -1;
+            if (obj._id != -1) {
+                var criteria = { _id: obj._id };
+                var old = await commondb.findOne(model, criteria, {});
                 var collInfos = await commondb.getCollections();
+                console.log(collInfos);
                 //Delete all rows of all models for this organization
                 for (var i = 0; i < collInfos.length; i++) {
                     var ucriteria = { ocode: obj.ocode };
@@ -309,20 +363,21 @@ router.post('/delete', async function (req, res) {
                 log.type = 'Delete';
                 log.reference = obj.ocode;
                 log.apptype = apptype;
-                log.message = ' organization has been removed';
+                log.message = ' organization has been permanently removed';
                 log.ipaddress = ipaddress;
-                commondb.insertLog( log);
-                if(old.logo) {
+                commondb.insertLog(log);
+                if (old.logo) {
                     var oldName = old.logo;
-                    commonspace.remove(IMAGE_FOLDER, oldName, function(err, success){
-                        if(err) logger.logError(err);
+                    commonspace.remove(IMAGE_FOLDER, oldName, function (err, success) {
+                        if (err) logger.logError(err);
                         else logger.logInfo(success);
                     })
                 }
             }
             else res.status(500).json({ error: 'ID is not a valid string' });
         } catch (err) {
-            res.status(err.status).json(err.message);
+            if (!err) res.status(500).json({ error: 'API error! Please trye after some time' })
+            else res.status(err.status ? err.status : 500).json(err.message ? err.message : { error: 'DB error! Please trye after some time' });
         }
     }
     else {//If authorization failed

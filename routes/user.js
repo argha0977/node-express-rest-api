@@ -845,21 +845,28 @@ router.post('/signin', async function (req, res) {
       if (result.status == 'Active') {
         var match = await pwd.comparePassword(obj.password, result.password);
         if (match) {
+          if (result.ocode) {
+            var organization = await commondb.findOne('organization', { ocode: result.ocode }, { expiredon: 1, oname: 1, status: 1, _id: 0 });
+            if (organization.status == 'Removed') {
+              var error = {
+                status: 404,
+                message: { error: 'This organization has been removed. Please contact with your vendor.' }
+              };
+              throw error;
+            }
+            //Organization expiry checking
+            /* if (moment().isAfter(organization.expiredon)) {
+              var err = {
+                status: 400,
+                message: { error: 'Service for your organization has been expired.' }
+              }
+              throw err;
+            } */
+          }
           //Generate Base64 user token
           /* var tokenJson = { o: result.ocode, u: result.userid, ll: new Date() };
           result.usertoken = base64.encode(JSON.stringify(tokenJson)); */
           delete result.password;
-          //Organization expiry checking
-          /* if(result.ocode) {
-            var organization = await commondb.findOne('organization', { ocode: result.ocode }, { expiredon: 1, oname: 1, _id: 0})
-            if(moment().isAfter(organization.expiredon)) {
-              var err = {
-                status: 400,
-                message: { error: 'Service for your organization has been expired.'}
-              }
-              throw err;
-            }
-          } */
           //Generate JWT Token for the session
           var user = { userid: result.userid, ocode: result.ocode, apptype: apptype };
           const usertoken = jwt.sign(user, common.tokenSecret,
