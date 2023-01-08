@@ -196,10 +196,81 @@ module.exports = {
     },
 
     /**
+     * Get financial year from a date
+     * @param {date} date Date
+     */
+    getFinancialYear: function (date) {
+        var cfyear = "";
+        var year = new Date(date).getFullYear();
+        var month = new Date(date).getMonth();
+        if (month >= 0 && month <= 2) {
+            cfyear = (year - 1).toString() + '-' + year.toString();
+        }
+        else {
+            cfyear = year.toString() + '-' + (year + 1).toString();
+        }
+        return cfyear;
+    },
+
+    /**
+     * Get start and end dates of financial year.
+     * @param {String} fyear Financial Year
+     */
+    datesOfFinancialYear: function (fyear) {
+        //Split fyear
+        var splitted = fyear.split('-');
+        //Get Years
+        var syear = parseInt(splitted[0].trim());
+        var eyear = parseInt(splitted[1].trim());
+        //Set Start and End Dates
+        var sdate = new Date(syear, 3, 1);
+        var edate = new Date(eyear, 2, 31);
+        var result = {
+            start: sdate,
+            end: edate
+        };
+        return result;
+    },
+
+    /**
+     * Get previous financial year
+     * @param {String} fyear Financial Year
+     */
+    previousFinancialYear(fyear) {
+        //Split fyear
+        var splitted = fyear.split('-');
+        //Get Years
+        var syear = parseInt(splitted[0].trim());
+        var eyear = parseInt(splitted[1].trim());
+        //Set Previous Financial Year
+        var pfyear = (syear - 1).toString() + '-' + (eyear - 1).toString();
+        return pfyear;
+    },
+
+    /**
      * Get current timestamp id
      */
     getTimeStampId: function () {
-        return new Date().valueOf();
+        return new Date().valueOf().toString();
+    },
+
+    /**
+     * Get short value for amount 
+     * @param {number} value Amount
+     * @returns Return amount in text
+     */
+    getValue: function (value) {
+        var result = (value / 10000000);
+        if (result >= 1) return Math.ceil(result).toString() + 'Cr.';
+        else {
+            result = (value / 100000);
+            if (result >= 1) return Math.ceil(result).toString() + 'Lac';
+            else {
+                result = (value / 1000);
+                if (result >= 1) return Math.ceil(result).toString() + 'K';
+                else return value;
+            }
+        }
     },
 
     /**

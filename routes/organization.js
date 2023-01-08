@@ -618,6 +618,105 @@ router.get('/orgLogo/:file', function (req, res) {
     }
 });
 
+/*Distinct Countries*/
+router.post('/countries', async function (req, res) {
+    if (auth.isAuthorized(req.headers['authorization'])) {
+        var obj = req.body;
+        try {
+            for (var key in obj) {
+                try {
+                    if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
+                } catch (err) { }
+                if (typeof (obj[key]) != "boolean") {
+                    if (obj[key] == '') {
+                        delete obj[key];
+                    }
+                }
+            }
+            regxattrs.forEach(element => {
+                if (obj[element]) {
+                    try {
+                        obj[element] = new RegExp('^' + obj[element], 'i');
+                    } catch (error) { }
+                }
+            });
+            var result = await commondb.distinct(model, obj, 'country');
+            res.status(200).json(result);
+        } catch (err) {
+            res.status(err.status).json(err.message);
+        }
+    }
+    else {//If authorization failed
+        res.status(403).json({ error: 'Request forbidden! Authorization key is incorrect' });
+    }
+});
+
+/*Distinct States*/
+router.post('/states', async function (req, res) {
+    if (auth.isAuthorized(req.headers['authorization'])) {
+        var obj = req.body;
+        try {
+            for (var key in obj) {
+                try {
+                    if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
+                } catch (err) { }
+                if (typeof (obj[key]) != "boolean") {
+                    if (obj[key] == '') {
+                        delete obj[key];
+                    }
+                }
+            }
+            regxattrs.forEach(element => {
+                if (obj[element]) {
+                    try {
+                        obj[element] = new RegExp('^' + obj[element], 'i');
+                    } catch (error) { }
+                }
+            });
+            var result = await commondb.distinct(model, obj, 'state');
+            res.status(200).json(result);
+        } catch (err) {
+            res.status(err.status).json(err.message);
+        }
+    }
+    else {//If authorization failed
+        res.status(403).json({ error: 'Request forbidden! Authorization key is incorrect' });
+    }
+});
+
+/*Distinct Cities*/
+router.post('/cities', async function (req, res) {
+    if (auth.isAuthorized(req.headers['authorization'])) {
+        var obj = req.body;
+        try {
+            for (var key in obj) {
+                try {
+                    if (typeof (ob[key]) == 'string') obj[key] = obj[key].trim();
+                } catch (err) { }
+                if (typeof (obj[key]) != "boolean") {
+                    if (obj[key] == '') {
+                        delete obj[key];
+                    }
+                }
+            }
+            regxattrs.forEach(element => {
+                if (obj[element]) {
+                    try {
+                        obj[element] = new RegExp('^' + obj[element], 'i');
+                    } catch (error) { }
+                }
+            });
+            var result = await commondb.distinct(model, obj, 'city');
+            res.status(200).json(result);
+        } catch (err) {
+            res.status(err.status).json(err.message);
+        }
+    }
+    else {//If authorization failed
+        res.status(403).json({ error: 'Request forbidden! Authorization key is incorrect' });
+    }
+});
+
 module.exports = router;
 
 /*************************************

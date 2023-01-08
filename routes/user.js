@@ -264,7 +264,7 @@ router.post('/update', async function (req, res) {
     });
 
     obj.lastupdatedon = new Date();
-    userid = 'Guest';
+    var userid = 'Guest';
     if (obj.cuserid) {
       userid = obj.cuserid;
       obj.lastupdatedby = obj.cuserid;
@@ -357,7 +357,7 @@ router.post('/delete', async function (req, res) {
       delete obj.ipaddress;
     }
 
-    userid = 'Guest';
+    var userid = 'Guest';
     if (obj.duserid) {
       userid = obj.duserid;
       obj.lastupdatedby = obj.duserid;

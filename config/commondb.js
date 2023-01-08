@@ -256,6 +256,41 @@ module.exports = {
     },
 
     /**
+     * Aggregate rows
+     * @param {string} model Model Name
+     * @param {*} aggregateArray Aggregate Array
+     */
+    aggregate: async function (model, aggregateArray) {
+        try {
+
+            if (aggregateArray.length > 0) {
+                const db = con.db;
+                /* var grouping = false;
+                for (var i = 0; i < aggregateArray.length; i++) {
+                    if(aggregateArray[i]['$match'] && !grouping) {
+                        var criteria = aggregateArray[i]['$match'];
+                        if (!criteria.trashed) criteria.trashed = { $ne: true };
+                        aggregateArray[i]['$match'] = criteria;
+                    }
+                    else if (aggregateArray[i]['$group']) grouping = true;
+                    
+                } */
+                var result = await db.collection(model).aggregate(aggregateArray).toArray();
+                return result;
+            }
+            else {
+                var error = { status: 500, message: { error: 'Nothing to aggregate' } };
+                throw error;
+            }
+        } catch (err) {
+            logger.logError(model + ': Error in aggregate:');
+            logger.logError(err);
+            var error = { status: 500, message: { error: 'DB error in grouping rows of ' + model } };
+            throw error;
+        }
+    },
+
+    /**
      * Distinct rows
      * @param {string} model Model Name
      * @param {*} criteria Criteria JSON
