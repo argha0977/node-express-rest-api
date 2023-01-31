@@ -7,7 +7,7 @@
 
 var express = require('express');
 var router = express.Router();
-var ObjectID = require('mongodb').ObjectID;
+var ObjectID = require('mongodb').ObjectId;
 var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
 
@@ -73,7 +73,8 @@ router.post('/create', async function (req, res) {
                 var min = new Date().getMinutes();
                 var sec = new Date().getSeconds();
                 var ms = new Date().getMilliseconds();
-                obj[element] = new Date(year, month, day, hour, min, sec, ms);
+                if ((hour * 100 + min) >= 1830) obj[element] = moment(new Date(year, month, day, hour, min, sec, ms)).add(5, 'hour').add(30, 'minute').toDate();
+                else obj[element] = new Date(year, month, day, hour, min, sec, ms);
             }
             else {
                 switch (element) {
@@ -213,7 +214,7 @@ router.post('/update', async function (req, res) {
         });
 
         obj.lastupdatedon = new Date();
-        userid = 'Guest';
+        var userid = 'Guest';
         if (obj.userid) {
             userid = obj.userid;
             obj.lastupdatedby = obj.userid;
@@ -236,6 +237,19 @@ router.post('/update', async function (req, res) {
                         delete obj[key];
                     }
                     else if (old[key] != obj[key]) {
+                        if (dateattrs.indexOf(key) >= 0) {
+                            if (!moment(old[key]).isSame(obj[key])) {
+                                var day = new Date(obj[key]).getDate();
+                                var month = new Date(obj[key]).getMonth();
+                                var year = new Date(obj[key]).getFullYear();
+                                var hour = new Date().getHours();
+                                var min = new Date().getMinutes();
+                                var sec = new Date().getSeconds();
+                                var ms = new Date().getMilliseconds();
+                                if ((hour * 100 + min) >= 1830) obj[key] = moment(new Date(year, month, day, hour, min, sec, ms)).add(5, 'hour').add(30, 'minute').toDate();
+                                else obj[key] = new Date(year, month, day, hour, min, sec, ms);
+                            }
+                        }
                         if (logmessage) logmessage += ', ';
                         logmessage += key;
                     }
@@ -285,7 +299,7 @@ router.post('/delete', async function (req, res) {
             delete obj.ipaddress;
         }
 
-        userid = 'Guest';
+        var userid = 'Guest';
         if (obj.userid) {
             userid = obj.userid;
             delete obj.userid;
@@ -339,7 +353,7 @@ router.post('/remove', async function (req, res) {
             delete obj.ipaddress;
         }
 
-        userid = 'Guest';
+        var userid = 'Guest';
         if (obj.userid) {
             userid = obj.userid;
             delete obj.userid;

@@ -7,7 +7,7 @@
 
 var express = require('express');
 var router = express.Router();
-var ObjectID = require('mongodb').ObjectID;
+var ObjectID = require('mongodb').ObjectId;
 var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
 
@@ -78,7 +78,8 @@ router.post('/create', async function (req, res) {
         var min = new Date().getMinutes();
         var sec = new Date().getSeconds();
         var ms = new Date().getMilliseconds();
-        obj[element] = new Date(year, month, day, hour, min, sec, ms);
+        if ((hour * 100 + min) >= 1830) obj[element] = moment(new Date(year, month, day, hour, min, sec, ms)).add(5, 'hour').add(30, 'minute').toDate();
+        else obj[element] = new Date(year, month, day, hour, min, sec, ms);
       }
       else {
         switch (element) {
@@ -306,6 +307,19 @@ router.post('/update', async function (req, res) {
               delete obj[key];
             }
             else if (old[key] != obj[key]) {
+              if (dateattrs.indexOf(key) >= 0) {
+                if (!moment(old[key]).isSame(obj[key])) {
+                  var day = new Date(obj[key]).getDate();
+                  var month = new Date(obj[key]).getMonth();
+                  var year = new Date(obj[key]).getFullYear();
+                  var hour = new Date().getHours();
+                  var min = new Date().getMinutes();
+                  var sec = new Date().getSeconds();
+                  var ms = new Date().getMilliseconds();
+                  if ((hour * 100 + min) >= 1830) obj[key] = moment(new Date(year, month, day, hour, min, sec, ms)).add(5, 'hour').add(30, 'minute').toDate();
+                  else obj[key] = new Date(year, month, day, hour, min, sec, ms);
+                }
+              }
               if (logmessage) logmessage += ', ';
               logmessage += key;
             }
@@ -972,6 +986,25 @@ router.get('/verifyToken', userauth, async function (req, res) {
             message: { error: 'Your account has been deactivated. Please contact with your administrator.' }
           }
           throw err;
+        }
+        if (result.ocode) {
+          var organization = await commondb.findOne('organization', { ocode: result.ocode }, { expiredon: 1, oname: 1, status: 1, features: 1, _id: 0 });
+          if (organization.status == 'Removed') {
+            var error = {
+              status: 404,
+              message: { error: 'This organization has been removed. Please contact with your vendor.' }
+            };
+            throw error;
+          }
+          //Organization expiry checking
+          /* if (moment().isAfter(organization.expiredon)) {
+            var err = {
+              status: 400,
+              message: { error: 'Service for your organization has been expired.' }
+            }
+            throw err;
+          } */
+          if (organization.features) result.features = organization.features;
         }
         res.status(200).json(result);
         /* if (moment().isSameOrBefore(moment(tokenJson.ll).add(3, 'months'))) {
