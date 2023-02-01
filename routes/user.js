@@ -94,7 +94,7 @@ router.post('/create', async function (req, res) {
       obj.status = 'Active';
     }
 
-    var otype = common.apps.Organization;
+    var otype = common.apps.Organization.orgtype;
     if (obj.otype) {
       otype = obj.otype;
       delete obj.otype
@@ -609,7 +609,7 @@ router.post('/updatePassword', async function (req, res) {
       delete obj.ipaddress;
     }
 
-    var otype = common.apps.Organization;
+    var otype = common.apps.Organization.orgtype;
     if (obj.otype) {
       otype = obj.otype;
       delete obj.otype
@@ -700,7 +700,7 @@ router.post('/resetPassword', async function (req, res) {
       delete obj.ipaddress;
     }
 
-    var otype = common.apps.Organization;
+    var otype = common.apps.Organization.orgtype;
     if (obj.otype) {
       otype = obj.otype;
       delete obj.otype
