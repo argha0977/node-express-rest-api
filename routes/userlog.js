@@ -8,6 +8,8 @@
 var express = require('express');
 var router = express.Router();
 
+var moment = require('moment');
+
 const auth = require('../policies/authorization');
 const commondb = require('../config/commondb');
 const common = require('../config/common');
@@ -51,8 +53,11 @@ router.post('/search', async function (req, res) {
                 delete obj.start;
                 delete obj.end;
             }
+            obj.sort = { timestamp: -1 };
             var result = await commondb.find(model, obj, {});
+            var userids = [];
             for (var index = 0; index < result.length; index++) {
+                if (userids.indexOf(result[index].userid) == -1) userids.push(result[index].userid);
                 if (result[index.type] == 'Delete') {
                     result[index].message += ' from';
                 }
@@ -62,6 +67,40 @@ router.post('/search', async function (req, res) {
                 result[index].message += ' collection ' + result[index].collection;
                 if (result[index].reference) {
                     result[index].message += ' with reference ' + result[index].reference;
+                }
+            }
+            //Find and Set User names
+            var criteria = { $or: [{ userid: { $in: userids } }, { mobile: { $in: userids } }, { email: { $in: userids } }] }
+            const users = await commondb.find('user', criteria, { userid: 1, email: 1, mobile: 1, gender: 1, firstname: 1, lastname: 1, image: 1, _id: 0 });
+            for (var i = 0; i < result.length; i++) {
+                var index = common.findItem(users, 'userid', result[i].userid);
+                if (index >= 0) {
+                    result[i].firstname = users[index].firstname;
+                    result[i].lastname = users[index].lastname;
+                    result[i].image = users[index].image;
+                    result[i].gender = users[index].gender;
+                }
+                else {
+                    var index = common.findItem(users, 'email', result[i].userid);
+                    if (index >= 0) {
+                        result[i].firstname = users[index].firstname;
+                        result[i].lastname = users[index].lastname;
+                        result[i].image = users[index].image;
+                        result[i].gender = users[index].gender;
+                    }
+                    else {
+                        var index = common.findItem(users, 'mobile', result[i].userid);
+                        if (index >= 0) {
+                            result[i].firstname = users[index].firstname;
+                            result[i].lastname = users[index].lastname;
+                            result[i].image = users[index].image;
+                            result[i].gender = users[index].gender;
+                        }
+                        else {
+                            result[i].firstname = 'No';
+                            result[i].lastname = 'Name';
+                        }
+                    }
                 }
             }
             res.status(200).json(result);

@@ -158,7 +158,7 @@ router.post('/create', async function (req, res) {
                 var result = await commondb.insertOne(model, obj);
                 res.status(200).json(result);
                 if (result.email) sendConfirmationMail(result);
-                log = {};
+                var log = { collection: model };
                 //log.ocode = obj.ocode;
                 log.userid = userid;
                 log.type = 'Add';
@@ -258,7 +258,7 @@ router.post('/update', async function (req, res) {
                 if (unsetCount > 0) updateAttr = { $set: obj, $unset: unset };
                 var result = await commondb.updateOne( model, criteria, updateAttr);
                 res.status(200).json(result);
-                log = {};
+                var log = { collection: model };
                 //log.ocode = obj.ocode;
                 log.userid = userid;
                 log.type = 'Update';
@@ -314,7 +314,7 @@ router.post('/delete', async function (req, res) {
                 var updateAttr = { status: 'Removed' };
                 var result = await commondb.updateOne(model, criteria, updateAttr);
                 res.status(200).json({ message: obj.oname + ' organization has been successfully deleted' });
-                var log = {};
+                var log = { collection: model };
                 //log.ocode = obj.ocode;
                 log.userid = userid;
                 log.type = 'Delete';
@@ -373,7 +373,7 @@ router.post('/remove', async function (req, res) {
                     await deleteOther(ucriteria, collInfos[i].name);
                 }
                 res.status(200).json({ message: obj.oname + ' organization has been successfully deleted' });
-                var log = {};
+                var log = { collection: model };
                 //log.ocode = obj.ocode;
                 log.userid = userid;
                 log.type = 'Delete';

@@ -208,7 +208,7 @@ router.post('/create', async function (req, res) {
           result.otype = otype;
           if (result.email) sendConfirmationMail(result, 'new');
           if (result.mobile) sendOtp(result, 'new');
-          log = {};
+          var log = { collection: model};
           log.ocode = obj.ocode;
           log.userid = userid;
           log.type = 'Add';
@@ -328,7 +328,7 @@ router.post('/update', async function (req, res) {
           if (unsetCount > 0) updateAttr = { $set: obj, $unset: unset };
           var result = await commondb.updateOne(model, criteria, updateAttr);
           res.status(200).json(result);
-          log = {};
+          var log = { collection: model };
           log.ocode = obj.ocode;
           log.userid = userid;
           log.type = 'Update';
@@ -395,7 +395,7 @@ router.post('/delete', async function (req, res) {
         var old = await commondb.findOne(model, criteria, {});
         var result = await commondb.deleteOne(model, criteria);
         res.status(200).json(result);
-        var log = {};
+        var log = { collection: model };
         log.ocode = obj.ocode;
         log.userid = userid;
         log.type = 'Delete';
@@ -659,7 +659,7 @@ router.post('/updatePassword', async function (req, res) {
         result.otype = otype;
         if (result.email) sendConfirmationMail(result, 'update');
         if (result.mobile) sendOtp(result, 'update');
-        log = {};
+        var log = { collection: model };
         log.ocode = obj.ocode;
         log.userid = userid;
         log.type = 'Update';
@@ -751,7 +751,7 @@ router.post('/resetPassword', async function (req, res) {
         result.otype = otype;
         if (result.email) sendConfirmationMail(result, 'update');
         if (result.mobile) sendOtp(result, 'update');
-        log = {};
+        var log = { collection: model };
         log.ocode = obj.ocode;
         log.userid = userid;
         log.type = 'Update';
@@ -891,7 +891,7 @@ router.post('/signin', async function (req, res) {
           );
           result.usertoken = usertoken;
           res.status(200).json(result);
-          log = {};
+          var log = { collection: model };
           log.ocode = result.ocode;
           log.userid = obj.userid;
           log.type = 'Sign in';
@@ -937,7 +937,7 @@ router.post('/signout', async function (req, res) {
     }
 
     try {
-      log = {};
+      var log = { collection: model };
       log.ocode = result.ocode;
       log.userid = obj.userid;
       log.type = 'Sign out';
