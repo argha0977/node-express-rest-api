@@ -893,7 +893,7 @@ router.post('/signin', async function (req, res) {
           res.status(200).json(result);
           var log = { collection: model };
           log.ocode = result.ocode;
-          log.userid = obj.userid;
+          log.userid = result.userid;
           log.type = 'Sign in';
           log.reference = result.userid;
           log.apptype = apptype;
@@ -938,10 +938,10 @@ router.post('/signout', async function (req, res) {
 
     try {
       var log = { collection: model };
-      log.ocode = result.ocode;
+      log.ocode = obj.ocode;
       log.userid = obj.userid;
       log.type = 'Sign out';
-      log.reference = result.userid;
+      log.reference = obj.userid;
       log.apptype = apptype;
       log.message = ' has been singed out';
       log.ipaddress = ipaddress;
